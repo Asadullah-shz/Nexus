@@ -12,46 +12,42 @@ export const InvestorsPage: React.FC = () => {
   const [selectedStages, setSelectedStages] = useState<string[]>([]);
   const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
   const [selectedLocations, setSelectedLocations] = useState<string[]>([]);
-  
+
   const LOCATIONS = ['San Francisco, CA', 'New York, NY', 'Boston, MA', 'London, UK', 'Austin, TX'];
-  
-  // Get unique investment stages and interests
+
   const allStages = Array.from(new Set(investors.flatMap(i => i.investmentStage)));
   const allInterests = Array.from(new Set(investors.flatMap(i => i.investmentInterests)));
-  
-  // Filter investors based on search and filters
+
   const filteredInvestors = investors.filter(investor => {
-    const matchesSearch = searchQuery === '' || 
+    const matchesSearch = searchQuery === '' ||
       investor.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       investor.bio.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      investor.investmentInterests.some(interest => 
+      investor.investmentInterests.some(interest =>
         interest.toLowerCase().includes(searchQuery.toLowerCase())
       );
-    
+
     const matchesStages = selectedStages.length === 0 ||
       investor.investmentStage.some(stage => selectedStages.includes(stage));
-    
+
     const matchesInterests = selectedInterests.length === 0 ||
       investor.investmentInterests.some(interest => selectedInterests.includes(interest));
-    
-    // Note: In a real app, 'location' would be a field on the investor object.
-    // For this demo, we'll simulate location matching.
-    const matchesLocation = selectedLocations.length === 0 || 
+
+    const matchesLocation = selectedLocations.length === 0 ||
       selectedLocations.some(loc => investor.bio.includes(loc.split(',')[0]));
-    
+
     return matchesSearch && matchesStages && matchesInterests && matchesLocation;
   });
-  
+
   const toggleStage = (stage: string) => {
-    setSelectedStages(prev => 
+    setSelectedStages(prev =>
       prev.includes(stage)
         ? prev.filter(s => s !== stage)
         : [...prev, stage]
     );
   };
-  
+
   const toggleInterest = (interest: string) => {
-    setSelectedInterests(prev => 
+    setSelectedInterests(prev =>
       prev.includes(interest)
         ? prev.filter(i => i !== interest)
         : [...prev, interest]
@@ -59,22 +55,22 @@ export const InvestorsPage: React.FC = () => {
   };
 
   const toggleLocation = (loc: string) => {
-    setSelectedLocations(prev => 
+    setSelectedLocations(prev =>
       prev.includes(loc)
         ? prev.filter(l => l !== loc)
         : [...prev, loc]
     );
   };
-  
+
   return (
     <div className="space-y-6 animate-fade-in">
       <div>
         <h1 className="text-2xl font-bold text-gray-900">Find Investors</h1>
         <p className="text-gray-600">Connect with investors who match your startup's needs</p>
       </div>
-      
+
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-        {/* Filters sidebar */}
+        {}
         <div className="space-y-6">
           <Card>
             <CardHeader>
@@ -99,7 +95,7 @@ export const InvestorsPage: React.FC = () => {
                   ))}
                 </div>
               </div>
-              
+
               <div>
                 <h3 className="text-sm font-medium text-gray-900 mb-2">Investment Interests</h3>
                 <div className="flex flex-wrap gap-2">
@@ -115,7 +111,7 @@ export const InvestorsPage: React.FC = () => {
                   ))}
                 </div>
               </div>
-              
+
               <div>
                 <h3 className="text-sm font-medium text-gray-900 mb-2">Location</h3>
                 <div className="space-y-1">
@@ -138,8 +134,8 @@ export const InvestorsPage: React.FC = () => {
             </CardBody>
           </Card>
         </div>
-        
-        {/* Main content */}
+
+        {}
         <div className="lg:col-span-3 space-y-6">
           <div className="flex items-center gap-4">
             <Input
@@ -150,7 +146,7 @@ export const InvestorsPage: React.FC = () => {
               inputClassName="h-11"
               fullWidth
             />
-            
+
             <div className="flex items-center gap-2">
               <Filter size={18} className="text-gray-500" />
               <span className="text-sm text-gray-600">
@@ -158,7 +154,7 @@ export const InvestorsPage: React.FC = () => {
               </span>
             </div>
           </div>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {filteredInvestors.map((investor, idx) => (
               <div key={investor.id} className="animate-fade-in" style={{ animationDelay: `${idx * 50}ms` }}>
@@ -172,9 +168,9 @@ export const InvestorsPage: React.FC = () => {
                 <Search size={40} className="mx-auto text-gray-300 mb-3" />
                 <h3 className="text-lg font-medium text-gray-900">No investors found</h3>
                 <p className="text-gray-500 mt-1">Try broadening your search or adjusting the filters.</p>
-                <Button 
-                  variant="outline" 
-                  size="sm" 
+                <Button
+                  variant="outline"
+                  size="sm"
                   className="mt-4"
                   onClick={() => {setSearchQuery(''); setSelectedStages([]); setSelectedInterests([]); setSelectedLocations([]);}}
                 >

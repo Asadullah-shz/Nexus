@@ -4,7 +4,7 @@ import { MastercardIcon, MastercardIconWhite, PaypassIcon } from "./icons";
 import { useAuth } from "../../context/AuthContext";
 
 const styles = sortCx({
-    // Normal
+
     transparent: {
         root: "bg-black/10 bg-linear-to-br from-white/30 to-transparent backdrop-blur-[6px] before:pointer-events-none before:absolute before:inset-0 before:z-1 before:rounded-[inherit] before:mask-linear-135 before:mask-linear-to-white/20 before:ring-1 before:ring-white/30 before:ring-inset",
         company: "text-white",
@@ -48,7 +48,6 @@ const styles = sortCx({
         cardTypeRoot: "bg-white",
     },
 
-    // Strip
     "transparent-strip": {
         root: "bg-linear-to-br from-white/30 to-transparent backdrop-blur-[6px] before:pointer-events-none before:absolute before:inset-0 before:z-1 before:rounded-[inherit] before:mask-linear-135 before:mask-linear-to-white/20 before:ring-1 before:ring-white/30 before:ring-inset",
         company: "text-white",
@@ -78,7 +77,6 @@ const styles = sortCx({
         cardTypeRoot: "bg-white/10",
     },
 
-    // Vertical strip
     "gray-strip-vertical": {
         root: "bg-linear-to-br from-white/30 to-transparent before:pointer-events-none before:absolute before:inset-0 before:z-1 before:rounded-[inherit] before:mask-linear-135 before:mask-linear-to-white/20 before:ring-1 before:ring-white/30 before:ring-inset",
         company: "text-white",
@@ -121,17 +119,16 @@ interface CreditCardProps {
 }
 
 const calculateScale = (desiredWidth: number, originalWidth: number, originalHeight: number) => {
-    // Calculate the scale factor
+
     const scale = desiredWidth / originalWidth;
 
-    // Calculate the new dimensions
     const scaledWidth = originalWidth * scale;
     const scaledHeight = originalHeight * scale;
 
     return {
-        scale: scale.toFixed(4), // Scale rounded to 4 decimal places
-        scaledWidth: scaledWidth.toFixed(2), // Width rounded to 2 decimal places
-        scaledHeight: scaledHeight.toFixed(2), // Height rounded to 2 decimal places
+        scale: scale.toFixed(4),
+        scaledWidth: scaledWidth.toFixed(2),
+        scaledHeight: scaledHeight.toFixed(2),
     };
 };
 
@@ -147,7 +144,7 @@ export const CreditCard = ({
     const { user } = useAuth();
     const originalWidth = 365;
     const originalHeight = 200;
-    
+
     const displayName = cardHolder || user?.name || "CARD HOLDER";
 
     const { scale, scaledWidth, scaledHeight } = useMemo(() => {
@@ -177,15 +174,15 @@ export const CreditCard = ({
                 }}
                 className={cx("absolute top-0 left-0 flex origin-top-left flex-col justify-between overflow-hidden rounded-2xl p-4", styles[type].root)}
             >
-                {/* Horizontal strip */}
+                {}
                 {STRIP_TYPES.includes(type as (typeof STRIP_TYPES)[number]) && (
                     <div className="pointer-events-none absolute inset-x-0 bottom-0 z-0 h-1/2 bg-neutral-800"></div>
                 )}
-                {/* Vertical stripe */}
+                {}
                 {VERTICAL_STRIP_TYPES.includes(type as (typeof VERTICAL_STRIP_TYPES)[number]) && (
                     <div className="pointer-events-none absolute inset-y-0 right-22 left-0 z-0 bg-neutral-800"></div>
                 )}
-                {/* Gradient diffusor */}
+                {}
                 {type === "transparent-gradient" && (
                     <div className="absolute -top-4 -left-4 grid grid-cols-2 blur-3xl">
                         <div className="size-20 rounded-tl-full bg-pink-500 opacity-30 mix-blend-normal" />
@@ -224,7 +221,7 @@ export const CreditCard = ({
                         <div className={cx("text-md leading-[normal] font-semibold tracking-[1px] tabular-nums", styles[type].footerText)}>
                             {cardNumber}
 
-                            {/* This is just a placeholder to always keep the space for card number even if there's no card number yet. */}
+                            {}
                             <span className="pointer-events-none invisible inline-block w-0 max-w-0 opacity-0">1</span>
                         </div>
                     </div>

@@ -11,14 +11,12 @@ import { INITIAL_DOCS, Doc, DocStatus } from '../../data/documents';
 import { useAuth } from '../../context/AuthContext';
 import { PreviewModal } from '../../components/documents/PreviewModal';
 
-
 const STATUS_CONFIG: Record<DocStatus, { variant: 'primary' | 'warning' | 'success'; icon: React.ReactNode; label: string }> = {
   'Draft': { variant: 'primary', icon: <Clock size={12} />, label: 'Draft' },
   'In Review': { variant: 'warning', icon: <AlertCircle size={12} />, label: 'In Review' },
   'Signed': { variant: 'success', icon: <CheckCircle size={12} />, label: 'Signed' }
 };
 
-// Simple signature pad component
 const SignaturePad: React.FC<{ onSign: (sig: string) => void; onClose: () => void }> = ({ onSign, onClose }) => {
   const canvasRef = React.useRef<HTMLCanvasElement>(null);
   const [isDrawing, setIsDrawing] = useState(false);
@@ -130,7 +128,6 @@ const SignaturePad: React.FC<{ onSign: (sig: string) => void; onClose: () => voi
   );
 };
 
-
 export const DocumentChamberPage: React.FC = () => {
   const { user } = useAuth();
   const [docs, setDocs] = useState<Doc[]>(INITIAL_DOCS);
@@ -191,27 +188,31 @@ export const DocumentChamberPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Stats */}
+      {}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {(['All', 'Draft', 'In Review', 'Signed'] as const).map(s => (
           <button
             key={s}
             onClick={() => setStatusFilter(s)}
             className={`text-left p-4 rounded-xl border-2 transition-all ${
-              statusFilter === s ? 'border-primary-500 bg-primary-50' : 'border-gray-200 bg-white hover:border-gray-300'
+              statusFilter === s 
+                ? 'border-primary-500 bg-primary-50' 
+                : 'border-gray-200 bg-white hover:border-gray-300:border-gray-700'
             }`}
           >
-            <p className="text-2xl font-bold text-gray-900">{counts[s]}</p>
-            <p className="text-sm text-gray-600 mt-1">{s === 'All' ? 'Total Documents' : s}</p>
+            <p className={`text-2xl font-bold ${statusFilter === s ? 'text-gray-900' : 'text-gray-900'}`}>{counts[s]}</p>
+            <p className={`text-sm mt-1 ${statusFilter === s ? 'text-gray-600' : 'text-gray-600'}`}>{s === 'All' ? 'Total Documents' : s}</p>
           </button>
         ))}
       </div>
 
-      {/* Upload zone */}
+      {}
       <div
         {...getRootProps()}
         className={`border-2 border-dashed rounded-xl p-8 text-center transition-colors cursor-pointer ${
-          isDragActive ? 'border-primary-500 bg-primary-50' : 'border-gray-300 hover:border-primary-400 hover:bg-gray-50'
+          isDragActive 
+            ? 'border-primary-500 bg-primary-50' 
+            : 'border-gray-300 hover:border-primary-400 hover:bg-gray-50:bg-gray-800/50'
         }`}
       >
         <input {...getInputProps()} />
@@ -222,7 +223,7 @@ export const DocumentChamberPage: React.FC = () => {
         <p className="text-xs text-gray-500 mt-1">Supports PDF, DOC, DOCX</p>
       </div>
 
-      {/* Documents list */}
+      {}
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
@@ -243,8 +244,8 @@ export const DocumentChamberPage: React.FC = () => {
               {filteredDocs.map(doc => {
                 const statusCfg = STATUS_CONFIG[doc.status];
                 return (
-                  <div key={doc.id} className="flex items-center p-4 hover:bg-gray-50 transition-colors">
-                    <div className="p-2 bg-primary-50 rounded-lg mr-4 flex-shrink-0">
+                  <div key={doc.id} className="flex items-center p-4 hover:bg-gray-50:bg-gray-800/50 transition-colors">
+                    <div className="p-2 bg-primary-50 rounded-lg mr-4 flex-shrink-0 transition-colors">
                       <FileText size={22} className="text-primary-600" />
                     </div>
 
@@ -268,7 +269,7 @@ export const DocumentChamberPage: React.FC = () => {
                     </div>
 
                     <div className="flex items-center gap-2 ml-4">
-                      {/* Status changer */}
+                      {}
                       {doc.status !== 'Signed' && (
                         <div className="relative group">
                           <button className="flex items-center gap-1 text-xs text-gray-500 hover:text-gray-700 border border-gray-200 rounded px-2 py-1">
@@ -331,7 +332,7 @@ export const DocumentChamberPage: React.FC = () => {
         </CardBody>
       </Card>
 
-      {/* Modals */}
+      {}
       {previewDoc && (
         <PreviewModal
           doc={previewDoc}

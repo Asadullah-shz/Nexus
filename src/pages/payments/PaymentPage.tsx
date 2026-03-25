@@ -34,8 +34,8 @@ interface Deal {
 }
 
 const INITIAL_DEALS: Deal[] = [
-  { startup: 'TechWave AI', avatar: 'https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg', target: 1500000, raised: 750000, investors: 3 },
-  { startup: 'GreenLife Solutions', avatar: 'https://images.pexels.com/photos/614810/pexels-photo-614810.jpeg', target: 2000000, raised: 1200000, investors: 5 },
+  { startup: 'TechWave AI', avatar: 'https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg', target: 2000000, raised: 1800000, investors: 24 },
+  { startup: 'GreenLife Solutions', avatar: 'https://images.pexels.com/photos/614810/pexels-photo-614810.jpeg', target: 1500000, raised: 900000, investors: 18 },
 ];
 
 const INITIAL_TRANSACTIONS: Transaction[] = [
@@ -96,7 +96,7 @@ const ActionModal: React.FC<ActionModalProps> = ({ type, walletBalance, deals, o
         </div>
 
         <div className="p-6 space-y-4">
-          {/* Amount */}
+          {}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Amount (USD)</label>
             <div className="relative">
@@ -135,7 +135,7 @@ const ActionModal: React.FC<ActionModalProps> = ({ type, walletBalance, deals, o
             )}
           </div>
 
-          {/* Validation Error */}
+          {}
           {error && (
             <div className="p-3 bg-red-50 border border-red-100 rounded-lg flex items-center gap-2 text-red-600 text-xs animate-shake">
               <XCircle size={14} />
@@ -143,7 +143,7 @@ const ActionModal: React.FC<ActionModalProps> = ({ type, walletBalance, deals, o
             </div>
           )}
 
-          {/* Quick amounts */}
+          {}
           <div>
             <p className="text-xs text-gray-500 mb-2">Quick amounts</p>
             <div className="flex gap-2">
@@ -159,7 +159,7 @@ const ActionModal: React.FC<ActionModalProps> = ({ type, walletBalance, deals, o
             </div>
           </div>
 
-          {/* Mock card details for deposit */}
+          {}
           {type === 'deposit' && (
             <div className="bg-gray-900 rounded-xl p-4 border border-gray-200">
               <CreditCard type="gray-dark"  />
@@ -176,7 +176,7 @@ const ActionModal: React.FC<ActionModalProps> = ({ type, walletBalance, deals, o
                 setError('Please enter a valid amount');
                 return;
               }
-              
+
               const isOutgoing = type === 'withdraw' || type === 'transfer' || type === 'funding';
               if (isOutgoing && numAmount > walletBalance) {
                 setError(`Insufficient funds. Available: $${walletBalance.toLocaleString()}`);
@@ -233,10 +233,9 @@ export const PaymentsPage: React.FC = () => {
     if (isIncoming) setWalletBalance(b => b + amount);
     if (isOutgoing) setWalletBalance(b => b - amount);
 
-    // If funding a deal, update the deals state
     if (type === 'funding') {
-      setDeals(prevDeals => prevDeals.map(deal => 
-        deal.startup.toLowerCase() === target.toLowerCase() 
+      setDeals(prevDeals => prevDeals.map(deal =>
+        deal.startup.toLowerCase() === target.toLowerCase()
           ? { ...deal, raised: deal.raised + amount, investors: deal.investors + 1 }
           : deal
       ));
@@ -245,7 +244,6 @@ export const PaymentsPage: React.FC = () => {
     toast.success(`${TX_CONFIG[type].label} of $${amount.toLocaleString()} initiated!`);
     setActiveModal(null);
 
-    // Simulate completion
     setTimeout(() => {
       setTransactions(txs => txs.map(tx => tx.id === newTx.id ? { ...tx, status: 'completed' } : tx));
     }, 3000);
@@ -262,7 +260,7 @@ export const PaymentsPage: React.FC = () => {
         <p className="text-gray-600">Manage your funds and track investment transactions</p>
       </div>
 
-      {/* Wallet card */}
+      {}
       <div className="bg-gradient-to-br from-primary-600 via-primary-700 to-primary-900 rounded-2xl p-6 text-white">
         <div className="flex items-start justify-between">
           <div>
@@ -294,7 +292,7 @@ export const PaymentsPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Quick actions */}
+      {}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {([
           { type: 'deposit', label: 'Deposit', icon: <ArrowDownLeft size={24} />, color: 'bg-green-50 text-green-600 hover:bg-green-100' },
@@ -313,7 +311,7 @@ export const PaymentsPage: React.FC = () => {
         ))}
       </div>
 
-      {/* Deals funding section */}
+      {}
       <Card>
         <CardHeader>
           <h2 className="text-lg font-medium text-gray-900">Active Deal Funding</h2>
@@ -349,7 +347,7 @@ export const PaymentsPage: React.FC = () => {
         </CardBody>
       </Card>
 
-      {/* Transaction history */}
+      {}
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between flex-wrap gap-3">
@@ -390,7 +388,7 @@ export const PaymentsPage: React.FC = () => {
                       day: 'numeric',
                       year: 'numeric'
                     });
-                    
+
                     return (
                       <tr key={tx.id} className="hover:bg-gray-50">
                         <td className="px-4 py-3">

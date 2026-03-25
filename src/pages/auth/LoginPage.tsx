@@ -6,7 +6,6 @@ import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
 import { UserRole } from '../../types';
 
-// Password strength checker
 const checkPasswordStrength = (password: string): { score: number; label: string; color: string; checks: { label: string; passed: boolean }[] } => {
   const checks = [
     { label: 'At least 8 characters', passed: password.length >= 8 },
@@ -21,7 +20,6 @@ const checkPasswordStrength = (password: string): { score: number; label: string
   return { score, label: labels[score] || '', color: colors[score] || '', checks };
 };
 
-// OTP Input component
 const OTPInput: React.FC<{ value: string[]; onChange: (v: string[]) => void }> = ({ value, onChange }) => {
   const refs = Array.from({ length: 6 }, () => useRef<HTMLInputElement>(null));
 
@@ -86,7 +84,7 @@ export const EnhancedLoginPage: React.FC = () => {
     setIsLoading(true);
     try {
       await login(email, password, role);
-      // Simulate 2FA requirement for demo
+
       setStep('2fa');
       setOtpTimer(30);
     } catch (err) {
@@ -100,7 +98,7 @@ export const EnhancedLoginPage: React.FC = () => {
     e.preventDefault();
     const otp = otpValue.join('');
     setIsLoading(true);
-    // Mock: any 6-digit code works
+
     await new Promise(r => setTimeout(r, 1000));
     if (otp.length === 6) {
       navigate(role === 'entrepreneur' ? '/dashboard/entrepreneur' : '/dashboard/investor');
@@ -152,7 +150,7 @@ export const EnhancedLoginPage: React.FC = () => {
 
           {step === 'credentials' ? (
             <form className="space-y-5" onSubmit={handleCredentialsSubmit}>
-              {/* Role selector */}
+              {}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">I am a</label>
                 <div className="grid grid-cols-2 gap-3">
@@ -177,7 +175,7 @@ export const EnhancedLoginPage: React.FC = () => {
                 </div>
               </div>
 
-              {/* Role-based UI hint */}
+              {}
               <div className={`text-xs p-3 rounded-lg ${role === 'entrepreneur' ? 'bg-blue-50 text-blue-700' : 'bg-green-50 text-green-700'}`}>
                 {role === 'entrepreneur'
                   ? '🚀 You\'ll have access to the Entrepreneur Dashboard with investor discovery and pitch tools.'
@@ -195,7 +193,7 @@ export const EnhancedLoginPage: React.FC = () => {
                 startAdornment={<User size={18} />}
               />
 
-              {/* Password with show/hide and strength */}
+              {}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
                 <div className="relative">
@@ -215,7 +213,7 @@ export const EnhancedLoginPage: React.FC = () => {
                   </button>
                 </div>
 
-                {/* Password strength meter */}
+                {}
                 {showStrength && (
                   <div className="mt-2 space-y-2">
                     <div className="flex gap-1">

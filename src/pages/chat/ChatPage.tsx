@@ -22,7 +22,6 @@ export const ChatPage: React.FC = () => {
   const messagesEndRef = useRef<null | HTMLDivElement>(null);
   const navigate = useNavigate();
 
-  // If we have a userId, we should show the chat on mobile, otherwise show the sidebar
   useEffect(() => {
     if (userId) {
       setShowSidebar(false);
@@ -30,53 +29,52 @@ export const ChatPage: React.FC = () => {
       setShowSidebar(true);
     }
   }, [userId]);
-  
+
   const chatPartner = userId ? findUserById(userId) : null;
-  
+
   useEffect(() => {
-    // Load conversations
+
     if (currentUser) {
       setConversations(getConversationsForUser(currentUser.id));
     }
   }, [currentUser]);
-  
+
   useEffect(() => {
-    // Load messages between users
+
     if (currentUser && userId) {
       setMessages(getMessagesBetweenUsers(currentUser.id, userId));
     }
   }, [currentUser, userId]);
-  
+
   useEffect(() => {
-    // Scroll to bottom of messages
+
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
-  
+
   const handleSendMessage = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!newMessage.trim() || !currentUser || !userId) return;
-    
+
     const message = sendMessage({
       senderId: currentUser.id,
       receiverId: userId,
       content: newMessage
     });
-    
+
     setMessages([...messages, message]);
     setNewMessage('');
-    
-    // Update conversations
+
     setConversations(getConversationsForUser(currentUser.id));
   };
-  
+
   if (!currentUser) return null;
-  
+
   return (
     <div className="flex h-[calc(100vh-4rem)] bg-white border border-gray-200 rounded-lg overflow-hidden animate-fade-in">
-      {/* Conversations sidebar */}
+      {}
       <div className={`${showSidebar ? 'block' : 'hidden'} md:block w-full md:w-1/3 lg:w-1/4 border-r border-gray-200 bg-white z-20`}>
-        <div className="p-4 border-b border-gray-200 md:hidden flex items-center justify-between">
+        <div className="p-4 border-b border-gray-200 md:hidden flex items-center justify-between ">
           <h1 className="text-xl font-bold text-gray-900">Messages</h1>
           <Button variant="ghost" size="sm" className="rounded-full p-2">
             <Search size={20} />
@@ -84,23 +82,23 @@ export const ChatPage: React.FC = () => {
         </div>
         <ChatUserList conversations={conversations} />
       </div>
-      
-      {/* Main chat area */}
+
+      {}
       <div className={`${!showSidebar ? 'flex' : 'hidden'} md:flex flex-1 flex-col relative`}>
-        {/* Chat header */}
+        {}
         {chatPartner ? (
           <>
             <div className="border-b border-gray-200 p-4 flex justify-between items-center bg-white/80 backdrop-blur-md sticky top-0 z-10">
               <div className="flex items-center">
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
+                <Button
+                  variant="ghost"
+                  size="sm"
                   className="md:hidden mr-2 p-1 rounded-full"
                   onClick={() => navigate('/messages')}
                 >
                   <ChevronLeft size={24} />
                 </Button>
-                
+
                 <Avatar
                   src={chatPartner.avatarUrl}
                   alt={chatPartner.name}
@@ -108,7 +106,7 @@ export const ChatPage: React.FC = () => {
                   status={chatPartner.isOnline ? 'online' : 'offline'}
                   className="mr-3"
                 />
-                
+
                 <div>
                   <h2 className="text-lg font-bold text-gray-900 leading-tight">{chatPartner.name}</h2>
                   <p className="text-xs text-success-600 font-medium">
@@ -116,7 +114,7 @@ export const ChatPage: React.FC = () => {
                   </p>
                 </div>
               </div>
-              
+
               <div className="flex space-x-2">
                 <Button
                   variant="ghost"
@@ -126,7 +124,7 @@ export const ChatPage: React.FC = () => {
                 >
                   <Phone size={18} />
                 </Button>
-                
+
                 <Link to="/video">
                   <Button
                     variant="ghost"
@@ -137,7 +135,7 @@ export const ChatPage: React.FC = () => {
                     <Video size={18} />
                   </Button>
                 </Link>
-                
+
                 <Button
                   variant="ghost"
                   size="sm"
@@ -148,8 +146,8 @@ export const ChatPage: React.FC = () => {
                 </Button>
               </div>
             </div>
-            
-            {/* Messages container */}
+
+            {}
             <div className="flex-1 p-4 overflow-y-auto bg-gray-50">
               {messages.length > 0 ? (
                 <div className="space-y-4">
@@ -172,8 +170,8 @@ export const ChatPage: React.FC = () => {
                 </div>
               )}
             </div>
-            
-            {/* Message input */}
+
+            {}
             <div className="border-t border-gray-200 p-4">
               <form onSubmit={handleSendMessage} className="flex space-x-2">
                 <Button
@@ -185,7 +183,7 @@ export const ChatPage: React.FC = () => {
                 >
                   <Smile size={20} />
                 </Button>
-                
+
                 <Input
                   type="text"
                   placeholder="Type a message..."
@@ -194,7 +192,7 @@ export const ChatPage: React.FC = () => {
                   fullWidth
                   className="flex-1"
                 />
-                
+
                 <Button
                   type="submit"
                   size="sm"

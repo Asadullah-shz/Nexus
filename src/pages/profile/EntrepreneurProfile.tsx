@@ -8,9 +8,9 @@ import { Badge } from '../../components/ui/Badge';
 import { useAuth } from '../../context/AuthContext';
 import { findUserById } from '../../data/users';
 import { createCollaborationRequest, getRequestsFromInvestor } from '../../data/collaborationRequests';
-import { getDocumentsByOwner, Doc } from '../../data/documents';
+import { getDocumentsByOwner } from '../../data/documents';
 import { PreviewModal } from '../../components/documents/PreviewModal';
-import { Entrepreneur } from '../../types';
+import { Entrepreneur, Doc } from '../../types';
 
 export const EntrepreneurProfile: React.FC = () => {
   const { id } = useParams<{ id: string }>();
@@ -25,7 +25,6 @@ export const EntrepreneurProfile: React.FC = () => {
     setTimeout(() => setShowEditSuccess(false), 3000);
   };
 
-  // Fetch entrepreneur data
   const entrepreneur = findUserById(id || '') as Entrepreneur | null;
 
   if (!entrepreneur || entrepreneur.role !== 'entrepreneur') {
@@ -44,7 +43,6 @@ export const EntrepreneurProfile: React.FC = () => {
   const isCurrentUser = currentUser?.id === entrepreneur.id;
   const isInvestor = currentUser?.role === 'investor';
 
-  // Check if the current investor has already sent a request to this entrepreneur
   const hasRequestedCollaboration = (isInvestor && id
     ? getRequestsFromInvestor(currentUser.id).some(req => req.entrepreneurId === id)
     : false) || requestSent;
@@ -53,7 +51,6 @@ export const EntrepreneurProfile: React.FC = () => {
     if (isInvestor && currentUser && id) {
       setIsRequesting(true);
 
-      // Simulate API call for smoother UX
       setTimeout(() => {
         createCollaborationRequest(
           currentUser.id,
@@ -68,7 +65,7 @@ export const EntrepreneurProfile: React.FC = () => {
 
   return (
     <div className="space-y-6 animate-fade-in">
-      {/* Profile header */}
+      {}
       <Card>
         <CardBody className="sm:flex sm:items-start sm:justify-between p-6">
           <div className="sm:flex sm:space-x-6">
@@ -155,9 +152,9 @@ export const EntrepreneurProfile: React.FC = () => {
       </Card>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Main content - left side */}
+        {}
         <div className="lg:col-span-2 space-y-6">
-          {/* About */}
+          {}
           <Card>
             <CardHeader>
               <h2 className="text-lg font-medium text-gray-900">About</h2>
@@ -167,7 +164,7 @@ export const EntrepreneurProfile: React.FC = () => {
             </CardBody>
           </Card>
 
-          {/* Startup Description */}
+          {}
           <Card>
             <CardHeader>
               <h2 className="text-lg font-medium text-gray-900">Startup Overview</h2>
@@ -205,7 +202,7 @@ export const EntrepreneurProfile: React.FC = () => {
             </CardBody>
           </Card>
 
-          {/* Team */}
+          {}
           <Card>
             <CardHeader className="flex justify-between items-center">
               <h2 className="text-lg font-medium text-gray-900">Team</h2>
@@ -228,7 +225,7 @@ export const EntrepreneurProfile: React.FC = () => {
 
                 <div className="flex items-center p-3 border border-gray-200 rounded-md">
                   <Avatar
-                    src="https://images.pexels.com/photos/2379005/pexels-photo-2379005.jpeg"
+                    src="https://images.pexels.com/photos/220453/pexels-photo-220453.jpeg"
                     alt="Team Member"
                     size="md"
                     className="mr-3"
@@ -241,7 +238,7 @@ export const EntrepreneurProfile: React.FC = () => {
 
                 <div className="flex items-center p-3 border border-gray-200 rounded-md">
                   <Avatar
-                    src="https://images.pexels.com/photos/773371/pexels-photo-773371.jpeg"
+                    src="https://images.pexels.com/photos/1181686/pexels-photo-1181686.jpeg"
                     alt="Team Member"
                     size="md"
                     className="mr-3"
@@ -262,9 +259,9 @@ export const EntrepreneurProfile: React.FC = () => {
           </Card>
         </div>
 
-        {/* Sidebar - right side */}
+        {}
         <div className="space-y-6">
-          {/* Funding Details */}
+          {}
           <Card>
             <CardHeader>
               <h2 className="text-lg font-medium text-gray-900">Funding</h2>
@@ -310,7 +307,7 @@ export const EntrepreneurProfile: React.FC = () => {
             </CardBody>
           </Card>
 
-          {/* Documents */}
+          {}
           <Card>
             <CardHeader>
               <h2 className="text-lg font-medium text-gray-900">Documents</h2>
@@ -370,7 +367,7 @@ export const EntrepreneurProfile: React.FC = () => {
         <PreviewModal
           doc={previewDoc}
           onClose={() => setPreviewDoc(null)}
-          showSignButton={isCurrentUser} // Only owner can see sign button here, or maybe none at all on profile
+          showSignButton={isCurrentUser}
         />
       )}
     </div>

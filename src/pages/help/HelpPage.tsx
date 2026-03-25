@@ -30,8 +30,8 @@ export const HelpPage: React.FC = () => {
         <h1 className="text-2xl font-bold text-gray-900">Help & Support</h1>
         <p className="text-gray-600">Find answers to common questions or get in touch with our support team</p>
       </div>
-      
-      {/* Search */}
+
+      {}
       <div className="max-w-2xl">
         <Input
           placeholder="Search help articles..."
@@ -39,9 +39,9 @@ export const HelpPage: React.FC = () => {
           fullWidth
         />
       </div>
-      
+
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {/* Quick links */}
+        {}
         <Card>
           <CardBody className="text-center p-6">
             <div className="inline-flex items-center justify-center w-12 h-12 bg-primary-50 rounded-lg mb-4">
@@ -60,7 +60,7 @@ export const HelpPage: React.FC = () => {
             </Button>
           </CardBody>
         </Card>
-        
+
         <Card>
           <CardBody className="text-center p-6">
             <div className="inline-flex items-center justify-center w-12 h-12 bg-primary-50 rounded-lg mb-4">
@@ -75,7 +75,7 @@ export const HelpPage: React.FC = () => {
             </Button>
           </CardBody>
         </Card>
-        
+
         <Card>
           <CardBody className="text-center p-6">
             <div className="inline-flex items-center justify-center w-12 h-12 bg-primary-50 rounded-lg mb-4">
@@ -95,8 +95,8 @@ export const HelpPage: React.FC = () => {
           </CardBody>
         </Card>
       </div>
-      
-      {/* FAQs */}
+
+      {}
       <Card>
         <CardHeader>
           <h2 className="text-lg font-medium text-gray-900">Frequently Asked Questions</h2>
@@ -116,8 +116,8 @@ export const HelpPage: React.FC = () => {
           </div>
         </CardBody>
       </Card>
-      
-      {/* Contact form */}
+
+      {}
       <Card>
         <CardHeader>
           <h2 className="text-lg font-medium text-gray-900">Still need help?</h2>
@@ -129,14 +129,14 @@ export const HelpPage: React.FC = () => {
                 label="Name"
                 placeholder="Your name"
               />
-              
+
               <Input
                 label="Email"
                 type="email"
                 placeholder="your@email.com"
               />
             </div>
-            
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Message
@@ -147,7 +147,7 @@ export const HelpPage: React.FC = () => {
                 placeholder="How can we help you?"
               ></textarea>
             </div>
-            
+
             <div>
               <Button>
                 Send Message

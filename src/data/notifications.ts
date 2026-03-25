@@ -1,4 +1,4 @@
-import { Notification, NotificationType } from '../types';
+import { Notification } from '../types';
 
 export const notifications: Notification[] = [
   {

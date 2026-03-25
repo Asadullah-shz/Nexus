@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { X, ChevronLeft, ChevronRight, HelpCircle } from 'lucide-react';
 
 export interface TourStep {
-  target: string; // CSS selector
+  target: string;
   title: string;
   content: string;
   placement?: 'top' | 'bottom' | 'left' | 'right';
@@ -36,7 +36,6 @@ export const GuidedTour: React.FC<GuidedTourProps> = ({ steps, isRunning, onComp
     const TOOLTIP_W = 300;
     const TOOLTIP_H = 150;
 
-    // Highlight
     setHighlightStyle({
       position: 'fixed',
       top: rect.top - 4,
@@ -49,7 +48,6 @@ export const GuidedTour: React.FC<GuidedTourProps> = ({ steps, isRunning, onComp
       transition: 'all 0.3s',
     });
 
-    // Tooltip
     let top = 0, left = 0;
     if (placement === 'bottom') {
       top = rect.bottom + scrollY + OFFSET;
@@ -65,7 +63,6 @@ export const GuidedTour: React.FC<GuidedTourProps> = ({ steps, isRunning, onComp
       left = rect.left + scrollX - TOOLTIP_W - OFFSET;
     }
 
-    // Clamp to viewport
     left = Math.max(8, Math.min(left, window.innerWidth - TOOLTIP_W - 8));
 
     setTooltipStyle({
@@ -92,13 +89,13 @@ export const GuidedTour: React.FC<GuidedTourProps> = ({ steps, isRunning, onComp
 
   return (
     <>
-      {/* Highlight overlay */}
+      {}
       <div style={highlightStyle} />
 
-      {/* Tooltip */}
+      {}
       <div ref={tooltipRef} style={tooltipStyle} className="animate-fade-in">
         <div className="bg-white rounded-xl shadow-2xl border border-gray-100 overflow-hidden">
-          {/* Header */}
+          {}
           <div className="bg-primary-600 px-4 py-3 flex items-center justify-between">
             <div className="flex items-center gap-2">
               <HelpCircle size={16} className="text-white/80" />
@@ -109,12 +106,12 @@ export const GuidedTour: React.FC<GuidedTourProps> = ({ steps, isRunning, onComp
             </button>
           </div>
 
-          {/* Content */}
+          {}
           <div className="px-4 py-3">
             <p className="text-sm text-gray-600">{step.content}</p>
           </div>
 
-          {/* Footer */}
+          {}
           <div className="px-4 py-3 bg-gray-50 border-t border-gray-100 flex items-center justify-between">
             <div className="flex gap-1">
               {steps.map((_, i) => (
@@ -148,7 +145,6 @@ export const GuidedTour: React.FC<GuidedTourProps> = ({ steps, isRunning, onComp
   );
 };
 
-// Tour trigger button
 interface TourTriggerProps {
   onStart: () => void;
 }
@@ -163,7 +159,6 @@ export const TourTrigger: React.FC<TourTriggerProps> = ({ onStart }) => (
   </button>
 );
 
-// Default tour steps for the platform
 export const DEFAULT_TOUR_STEPS: TourStep[] = [
   {
     target: '[data-tour="navbar"]',

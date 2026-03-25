@@ -116,3 +116,18 @@ export interface Participant {
   isMuted: boolean;
   isVideoOff: boolean;
 }
+
+// Document Types (DocumentsChamber)
+export type DocStatus = 'Draft' | 'In Review' | 'Signed';
+
+export interface Doc {
+  id: string;
+  name: string;
+  type: string;
+  size: string;
+  uploadedAt: string;
+  status: DocStatus;
+  signedBy?: string[];
+  ownerId: string;
+  content?: { title: string; lines: string[] }[];
+}

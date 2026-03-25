@@ -1,16 +1,4 @@
-export type DocStatus = 'Draft' | 'In Review' | 'Signed';
-
-export interface Doc {
-  id: string;
-  name: string;
-  type: string;
-  size: string;
-  uploadedAt: string;
-  status: DocStatus;
-  signedBy?: string[];
-  ownerId: string; // The entrepreneur ID who owns this document
-  content?: { title: string; lines: string[] }[];
-}
+import { Doc } from '../types';
 
 export const INITIAL_DOCS: Doc[] = [
   {

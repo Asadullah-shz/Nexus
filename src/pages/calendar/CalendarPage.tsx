@@ -5,7 +5,6 @@ import { Button } from '../../components/ui/Button';
 import { Badge } from '../../components/ui/Badge';
 import { Avatar } from '../../components/ui/Avatar';
 
-
 interface TimeSlot {
   id: string;
   time: string;
@@ -71,7 +70,7 @@ const confirmedMeetings: ConfirmedMeeting[] = [
   {
     id: 'cm1',
     with: 'Robert Torres',
-    withAvatar: 'https://images.pexels.com/photos/834863/pexels-photo-834863.jpeg',
+    withAvatar: 'https://images.pexels.com/photos/614810/pexels-photo-614810.jpeg',
     date: '2024-03-18',
     time: '3:00 PM',
     topic: 'Initial pitch review'
@@ -141,7 +140,7 @@ export const CalendarPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Tabs */}
+      {}
       <div className="flex gap-2 border-b border-gray-200">
         {(['calendar', 'requests', 'confirmed'] as const).map(tab => (
           <button
@@ -165,7 +164,7 @@ export const CalendarPage: React.FC = () => {
 
       {activeTab === 'calendar' && (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Calendar */}
+          {}
           <div className="lg:col-span-2">
             <Card>
               <CardHeader>
@@ -216,7 +215,7 @@ export const CalendarPage: React.FC = () => {
               </CardBody>
             </Card>
 
-            {/* Confirmed meetings for selected date */}
+            {}
             {selectedDate && (
               <Card className="mt-4">
                 <CardHeader>
@@ -249,7 +248,7 @@ export const CalendarPage: React.FC = () => {
             )}
           </div>
 
-          {/* Availability Slots */}
+          {}
           <div>
             <Card>
               <CardHeader>
@@ -277,8 +276,8 @@ export const CalendarPage: React.FC = () => {
                   </button>
                 ))}
                 <div className="pt-3 border-t border-gray-100 flex flex-col gap-2">
-                  <Button 
-                    className="w-full shadow-premium" 
+                  <Button
+                    className="w-full shadow-premium"
                     size="sm"
                     onClick={handleSaveAvailability}
                     isLoading={isSaving}

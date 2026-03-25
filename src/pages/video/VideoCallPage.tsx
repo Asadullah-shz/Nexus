@@ -4,95 +4,13 @@ import {
   MessageSquare, Settings, Maximize2, Phone, Send, MoreVertical
 } from 'lucide-react';
 import { Button } from '../../components/ui/Button';
-import { Avatar } from '../../components/ui/Avatar';
 import { Badge } from '../../components/ui/Badge';
+import { Avatar } from '../../components/ui/Avatar';
 import { Card, CardBody } from '../../components/ui/Card';
 import { useAuth } from '../../context/AuthContext';
-
-interface Participant {
-  id: string;
-  name: string;
-  avatar: string;
-  isMuted: boolean;
-  isVideoOff: boolean;
-}
-
-const MOCK_PARTICIPANTS: Participant[] = [
-  {
-    id: 'i1',
-    name: 'Michael Alexander',
-    avatar: 'https://images.pexels.com/photos/2379004/pexels-photo-2379004.jpeg',
-    isMuted: false,
-    isVideoOff: false,
-  },
-  {
-    id: 'i2',
-    name: 'Jennifer Lee',
-    avatar: 'https://images.pexels.com/photos/1181686/pexels-photo-1181686.jpeg',
-    isMuted: true,
-    isVideoOff: false,
-  },
-];
-
-const ALT_AVATAR = 'https://images.pexels.com/photos/1181686/pexels-photo-1181686.jpeg';
-
-// Procedural Audio Utility using Web Audio API
-const playCallSound = (type: 'join' | 'leave' | 'mute' | 'unmute' | 'share') => {
-  try {
-    const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
-    if (!AudioContext) return;
-    const ctx = new AudioContext();
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-
-    osc.connect(gain);
-    gain.connect(ctx.destination);
-
-    const now = ctx.currentTime;
-
-    switch (type) {
-      case 'join':
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(440, now);
-        osc.frequency.exponentialRampToValueAtTime(880, now + 0.2);
-        gain.gain.setValueAtTime(0.1, now);
-        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
-        osc.start(now);
-        osc.stop(now + 0.3);
-        break;
-      case 'leave':
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(880, now);
-        osc.frequency.exponentialRampToValueAtTime(440, now + 0.2);
-        gain.gain.setValueAtTime(0.1, now);
-        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
-        osc.start(now);
-        osc.stop(now + 0.3);
-        break;
-      case 'mute':
-      case 'unmute':
-        osc.type = 'triangle';
-        osc.frequency.setValueAtTime(type === 'mute' ? 300 : 500, now);
-        gain.gain.setValueAtTime(0.05, now);
-        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
-        osc.start(now);
-        osc.stop(now + 0.1);
-        break;
-      case 'share':
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(660, now);
-        osc.frequency.exponentialRampToValueAtTime(990, now + 0.1);
-        osc.frequency.exponentialRampToValueAtTime(660, now + 0.2);
-        gain.gain.setValueAtTime(0.1, now);
-        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
-        osc.start(now);
-        osc.stop(now + 0.3);
-        break;
-    }
-  } catch (e) {
-    console.error('Audio play failed', e);
-  }
-};
+import { Participant } from '../../types';
+import { MOCK_PARTICIPANTS, ALT_AVATAR } from '../../data/video';
+import { playCallSound } from '../../utils/audio';
 
 export const VideoCallPage: React.FC = () => {
   const { user } = useAuth();
@@ -113,14 +31,12 @@ export const VideoCallPage: React.FC = () => {
     if (callActive) {
       playCallSound('join');
       timerRef.current = setInterval(() => setCallDuration(d => d + 1), 1000);
-      
-      // Simulate participants joining
+
       setTimeout(() => {
         setParticipants(MOCK_PARTICIPANTS);
         playCallSound('join');
       }, 1500);
 
-      // Simulate speaker change
       const speakerInterval = setInterval(() => {
         const ids = ['self', ...MOCK_PARTICIPANTS.map(p => p.id)];
         setActiveSpeaker(ids[Math.floor(Math.random() * ids.length)]);
@@ -194,13 +110,13 @@ export const VideoCallPage: React.FC = () => {
           <p className="text-gray-600">Connect face-to-face with investors and entrepreneurs</p>
         </div>
 
-        {/* Start Call Panel */}
+        {}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2">
             <Card>
               <CardBody className="p-8">
                 <div className="text-center">
-                  {/* Video preview mockup */}
+                  {}
                   <div className="relative bg-gray-900 rounded-2xl overflow-hidden mb-6" style={{ aspectRatio: '16/9' }}>
                     <div className="absolute inset-0 flex items-center justify-center">
                       {isVideoOff ? (
@@ -224,7 +140,7 @@ export const VideoCallPage: React.FC = () => {
                       )}
                     </div>
 
-                    {/* Controls overlay */}
+                    {}
                     <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-3">
                       <button
                         onClick={() => setIsMuted(m => !m)}
@@ -257,7 +173,7 @@ export const VideoCallPage: React.FC = () => {
             </Card>
           </div>
 
-          {/* Upcoming calls */}
+          {}
           <div>
             <Card>
               <CardBody>
@@ -285,11 +201,10 @@ export const VideoCallPage: React.FC = () => {
     );
   }
 
-  // Active call UI
   return (
     <div className="animate-fade-in" ref={containerRef}>
       <div className="bg-gray-950 rounded-2xl overflow-hidden flex flex-col h-full" style={{ minHeight: '85vh' }}>
-        {/* Call header */}
+        {}
         <div className="flex items-center justify-between px-6 py-3 bg-gray-900 border-b border-gray-800">
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-2">
@@ -312,19 +227,19 @@ export const VideoCallPage: React.FC = () => {
           </div>
         </div>
 
-        {/* Main video area */}
+        {}
         <div className="flex flex-1 relative overflow-hidden bg-gray-950">
           <div className="flex-1 p-6 overflow-y-auto">
-            {/* Participant grid */}
+            {}
             <div className={`grid gap-4 h-full ${
-              participants.length === 0 ? 'grid-cols-1' : 
-              participants.length === 1 ? 'grid-cols-1 md:grid-cols-2' : 
+              participants.length === 0 ? 'grid-cols-1' :
+              participants.length === 1 ? 'grid-cols-1 md:grid-cols-2' :
               'grid-cols-1 md:grid-cols-2 lg:grid-cols-2'
             }`}>
-              {/* Self */}
+              {}
               <div className={`relative bg-gray-900 rounded-2xl overflow-hidden flex items-center justify-center border-2 transition-all duration-500 ${
-                activeSpeaker === 'self' 
-                  ? 'border-primary-500 ring-4 ring-primary-500/20 ring-inset shadow-[0_0_30px_rgba(59,130,246,0.5)] scale-[1.02] z-10' 
+                activeSpeaker === 'self'
+                  ? 'border-primary-500 ring-4 ring-primary-500/20 ring-inset shadow-[0_0_30px_rgba(59,130,246,0.5)] scale-[1.02] z-10'
                   : 'border-gray-800 scale-100'
               }`}>
                 {isVideoOff ? (
@@ -360,11 +275,11 @@ export const VideoCallPage: React.FC = () => {
                 </div>
               </div>
 
-              {/* Remote participants */}
+              {}
               {participants.map(p => (
                 <div key={p.id} className={`relative bg-gray-900 rounded-2xl overflow-hidden flex items-center justify-center border-2 transition-all duration-500 ${
-                  activeSpeaker === p.id 
-                    ? 'border-primary-500 ring-4 ring-primary-500/20 ring-inset shadow-[0_0_30px_rgba(59,130,246,0.5)] scale-[1.02] z-10' 
+                  activeSpeaker === p.id
+                    ? 'border-primary-500 ring-4 ring-primary-500/20 ring-inset shadow-[0_0_30px_rgba(59,130,246,0.5)] scale-[1.02] z-10'
                     : 'border-gray-800 scale-100'
                 }`}>
                   <div className="flex flex-col items-center">
@@ -400,7 +315,7 @@ export const VideoCallPage: React.FC = () => {
               )}
             </div>
 
-            {/* Screen share indicator */}
+            {}
             {isScreenSharing && (
               <div className="fixed bottom-24 left-1/2 -translate-x-1/2 flex items-center gap-3 bg-primary-600 text-white px-6 py-2 rounded-full shadow-lg animate-bounce">
                 <Monitor size={16} />
@@ -412,7 +327,7 @@ export const VideoCallPage: React.FC = () => {
             )}
           </div>
 
-          {/* Side panel */}
+          {}
           {sidebar && (
             <div className="w-80 bg-gray-900 border-l border-gray-800 flex flex-col shadow-2xl">
               <div className="p-4 border-b border-gray-800 flex items-center justify-between">
@@ -423,7 +338,7 @@ export const VideoCallPage: React.FC = () => {
                   <Settings size={16} className="rotate-45" />
                 </button>
               </div>
-              
+
               <div className="flex-1 overflow-y-auto p-4">
                 {sidebar === 'chat' ? (
                   <div className="space-y-4">
@@ -464,7 +379,7 @@ export const VideoCallPage: React.FC = () => {
                   </div>
                 )}
               </div>
-              
+
               {sidebar === 'chat' && (
                 <div className="p-4 border-t border-gray-800">
                   <div className="flex gap-2">
@@ -488,16 +403,16 @@ export const VideoCallPage: React.FC = () => {
           )}
         </div>
 
-        {/* Control bar */}
+        {}
         <div className="bg-gray-900 border-t border-gray-800 px-6 py-4">
           <div className="flex items-center justify-between max-w-5xl mx-auto">
-            {/* Call Info (Desktop) */}
+            {}
             <div className="hidden md:block">
               <p className="text-white text-sm font-medium">Quarterly Investment Meet</p>
               <p className="text-gray-500 text-xs mt-0.5">Meeting ID: bix-qxzo-nexus</p>
             </div>
 
-            {/* Main Controls */}
+            {}
             <div className="flex items-center gap-4">
               <button
                 onClick={toggleMute}
@@ -550,7 +465,7 @@ export const VideoCallPage: React.FC = () => {
               </button>
             </div>
 
-            {/* Layout Toggle (Desktop Right) */}
+            {}
             <div className="hidden md:flex items-center gap-2">
                <button className="p-2 text-gray-500 hover:text-white bg-gray-800 rounded-lg">
                  <MoreVertical size={18} />
