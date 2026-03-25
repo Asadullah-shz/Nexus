@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { Search, Filter, MapPin } from 'lucide-react';
 import { Input } from '../../components/ui/Input';
+import { Button } from '../../components/ui/Button';
 import { Card, CardHeader, CardBody } from '../../components/ui/Card';
-import { Badge } from '../../components/ui/Badge';
 import { EntrepreneurCard } from '../../components/entrepreneur/EntrepreneurCard';
 import { entrepreneurs } from '../../data/users';
 
@@ -10,9 +10,11 @@ export const EntrepreneursPage: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedIndustries, setSelectedIndustries] = useState<string[]>([]);
   const [selectedFundingRange, setSelectedFundingRange] = useState<string[]>([]);
+  const [selectedLocations, setSelectedLocations] = useState<string[]>([]);
   
-  // Get unique industries and funding ranges
+  // Get unique industries, funding ranges, and locations
   const allIndustries = Array.from(new Set(entrepreneurs.map(e => e.industry)));
+  const LOCATIONS = ['San Francisco, CA', 'New York, NY', 'Boston, MA', 'London, UK', 'Austin, TX'];
   const fundingRanges = ['< $500K', '$500K - $1M', '$1M - $5M', '> $5M'];
   
   // Filter entrepreneurs based on search and filters
@@ -39,7 +41,11 @@ export const EntrepreneursPage: React.FC = () => {
         }
       });
     
-    return matchesSearch && matchesIndustry && matchesFunding;
+    // Simulate location matching (in a real app, this would be a field on the object)
+    const matchesLocation = selectedLocations.length === 0 || 
+      selectedLocations.some(loc => entrepreneur.pitchSummary.includes(loc.split(',')[0]));
+    
+    return matchesSearch && matchesIndustry && matchesFunding && matchesLocation;
   });
   
   const toggleIndustry = (industry: string) => {
@@ -56,6 +62,21 @@ export const EntrepreneursPage: React.FC = () => {
         ? prev.filter(r => r !== range)
         : [...prev, range]
     );
+  };
+
+  const toggleLocation = (loc: string) => {
+    setSelectedLocations(prev => 
+      prev.includes(loc)
+        ? prev.filter(l => l !== loc)
+        : [...prev, loc]
+    );
+  };
+
+  const clearFilters = () => {
+    setSearchQuery('');
+    setSelectedIndustries([]);
+    setSelectedFundingRange([]);
+    setSelectedLocations([]);
   };
   
   return (
@@ -113,19 +134,21 @@ export const EntrepreneursPage: React.FC = () => {
               
               <div>
                 <h3 className="text-sm font-medium text-gray-900 mb-2">Location</h3>
-                <div className="space-y-2">
-                  <button className="flex items-center w-full text-left px-3 py-2 rounded-md text-sm text-gray-700 hover:bg-gray-50">
-                    <MapPin size={16} className="mr-2" />
-                    San Francisco, CA
-                  </button>
-                  <button className="flex items-center w-full text-left px-3 py-2 rounded-md text-sm text-gray-700 hover:bg-gray-50">
-                    <MapPin size={16} className="mr-2" />
-                    New York, NY
-                  </button>
-                  <button className="flex items-center w-full text-left px-3 py-2 rounded-md text-sm text-gray-700 hover:bg-gray-50">
-                    <MapPin size={16} className="mr-2" />
-                    Boston, MA
-                  </button>
+                <div className="space-y-1">
+                  {LOCATIONS.map(loc => (
+                    <button
+                      key={loc}
+                      onClick={() => toggleLocation(loc)}
+                      className={`flex items-center w-full text-left px-3 py-2 rounded-lg text-sm transition-all duration-200 ${
+                        selectedLocations.includes(loc)
+                          ? 'bg-primary-50 text-primary-700 font-medium'
+                          : 'text-gray-600 hover:bg-gray-50'
+                      }`}
+                    >
+                      <MapPin size={14} className={`mr-2 ${selectedLocations.includes(loc) ? 'text-primary-500' : 'text-gray-400'}`} />
+                      {loc}
+                    </button>
+                  ))}
                 </div>
               </div>
             </CardBody>
@@ -140,6 +163,7 @@ export const EntrepreneursPage: React.FC = () => {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               startAdornment={<Search size={18} />}
+              inputClassName="h-11"
               fullWidth
             />
             
@@ -148,16 +172,29 @@ export const EntrepreneursPage: React.FC = () => {
               <span className="text-sm text-gray-600">
                 {filteredEntrepreneurs.length} results
               </span>
+              {(searchQuery || selectedIndustries.length > 0 || selectedFundingRange.length > 0 || selectedLocations.length > 0) && (
+                <Button variant="ghost" size="sm" onClick={clearFilters} className="text-xs">
+                  Clear all
+                </Button>
+              )}
             </div>
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {filteredEntrepreneurs.map(entrepreneur => (
-              <EntrepreneurCard
-                key={entrepreneur.id}
-                entrepreneur={entrepreneur}
-              />
-            ))}
+            {filteredEntrepreneurs.length > 0 ? (
+              filteredEntrepreneurs.map(entrepreneur => (
+                <EntrepreneurCard
+                  key={entrepreneur.id}
+                  entrepreneur={entrepreneur}
+                />
+              ))
+            ) : (
+              <div className="col-span-full py-12 text-center bg-gray-50 rounded-2xl border-2 border-dashed border-gray-200">
+                <Search size={40} className="mx-auto text-gray-300 mb-3" />
+                <h3 className="text-lg font-medium text-gray-900">No startups found</h3>
+                <p className="text-gray-500 mt-1">Try broadening your search or adjusting the filters.</p>
+              </div>
+            )}
           </div>
         </div>
       </div>

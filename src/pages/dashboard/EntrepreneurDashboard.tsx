@@ -14,7 +14,7 @@ import { investors } from '../../data/users';
 export const EntrepreneurDashboard: React.FC = () => {
   const { user } = useAuth();
   const [collaborationRequests, setCollaborationRequests] = useState<CollaborationRequest[]>([]);
-  const [recommendedInvestors, setRecommendedInvestors] = useState(investors.slice(0, 3));
+  const [recommendedInvestors] = useState(investors.slice(0, 3));
   
   useEffect(() => {
     if (user) {
@@ -23,7 +23,10 @@ export const EntrepreneurDashboard: React.FC = () => {
       setCollaborationRequests(requests);
     }
   }, [user]);
-  
+
+  const acceptedRequests = collaborationRequests.filter(req => req.status === 'accepted');
+  const pendingRequests = collaborationRequests.filter(req => req.status === 'pending');
+
   const handleRequestStatusUpdate = (requestId: string, status: 'accepted' | 'rejected') => {
     setCollaborationRequests(prevRequests => 
       prevRequests.map(req => 
@@ -33,8 +36,6 @@ export const EntrepreneurDashboard: React.FC = () => {
   };
   
   if (!user) return null;
-  
-  const pendingRequests = collaborationRequests.filter(req => req.status === 'pending');
   
   return (
     <div className="space-y-6 animate-fade-in">
@@ -78,7 +79,7 @@ export const EntrepreneurDashboard: React.FC = () => {
               <div>
                 <p className="text-sm font-medium text-secondary-700">Total Connections</p>
                 <h3 className="text-xl font-semibold text-secondary-900">
-                  {collaborationRequests.filter(req => req.status === 'accepted').length}
+                  {acceptedRequests.length}
                 </h3>
               </div>
             </div>
@@ -93,7 +94,7 @@ export const EntrepreneurDashboard: React.FC = () => {
               </div>
               <div>
                 <p className="text-sm font-medium text-accent-700">Upcoming Meetings</p>
-                <h3 className="text-xl font-semibold text-accent-900">2</h3>
+                <h3 className="text-xl font-semibold text-accent-900">{acceptedRequests.length}</h3>
               </div>
             </div>
           </CardBody>

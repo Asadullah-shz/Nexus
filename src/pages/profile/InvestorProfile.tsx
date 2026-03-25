@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { MessageCircle, Building2, MapPin, UserCircle, BarChart3, Briefcase } from 'lucide-react';
+import { MessageCircle, Building2, MapPin, UserCircle, BarChart3, Briefcase, Send, CheckCircle } from 'lucide-react';
 import { Avatar } from '../../components/ui/Avatar';
 import { Button } from '../../components/ui/Button';
 import { Card, CardBody, CardHeader } from '../../components/ui/Card';
@@ -12,6 +12,15 @@ import { Investor } from '../../types';
 export const InvestorProfile: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const { user: currentUser } = useAuth();
+  const [isRequesting, setIsRequesting] = useState(false);
+  const [requestSent, setRequestSent] = useState(false);
+  const [showEditSuccess, setShowEditSuccess] = useState(false);
+  
+  const handleEditProfile = () => {
+    // Simulation: in a real app this would open a modal or navigate to /settings/profile
+    setShowEditSuccess(true);
+    setTimeout(() => setShowEditSuccess(false), 3000);
+  };
   
   // Fetch investor data
   const investor = findUserById(id || '') as Investor | null;
@@ -29,6 +38,17 @@ export const InvestorProfile: React.FC = () => {
   }
   
   const isCurrentUser = currentUser?.id === investor.id;
+  const isEntrepreneur = currentUser?.role === 'entrepreneur';
+  
+  const handleSendRequest = () => {
+    if (isEntrepreneur && currentUser && id) {
+      setIsRequesting(true);
+      setTimeout(() => {
+        setIsRequesting(false);
+        setRequestSent(true);
+      }, 800);
+    }
+  };
   
   return (
     <div className="space-y-6 animate-fade-in">
@@ -65,22 +85,48 @@ export const InvestorProfile: React.FC = () => {
           
           <div className="mt-6 sm:mt-0 flex flex-col sm:flex-row gap-2 justify-center sm:justify-end">
             {!isCurrentUser && (
-              <Link to={`/chat/${investor.id}`}>
-                <Button
-                  leftIcon={<MessageCircle size={18} />}
-                >
-                  Message
-                </Button>
-              </Link>
+              <>
+                <Link to={`/chat/${investor.id}`}>
+                  <Button
+                    variant="outline"
+                    leftIcon={<MessageCircle size={18} />}
+                  >
+                    Message
+                  </Button>
+                </Link>
+                
+                {isEntrepreneur && (
+                  <Button
+                    leftIcon={<Send size={18} />}
+                    isLoading={isRequesting}
+                    disabled={requestSent}
+                    onClick={handleSendRequest}
+                    variant={requestSent ? 'outline' : 'primary'}
+                  >
+                    {requestSent ? 'Request Sent' : 'Request Connection'}
+                  </Button>
+                )}
+              </>
             )}
             
             {isCurrentUser && (
-              <Button
-                variant="outline"
-                leftIcon={<UserCircle size={18} />}
-              >
-                Edit Profile
-              </Button>
+              <div className="relative">
+                <Button
+                  variant="outline"
+                  leftIcon={showEditSuccess ? <CheckCircle size={18} className="text-success-500" /> : <UserCircle size={18} />}
+                  onClick={handleEditProfile}
+                  disabled={showEditSuccess}
+                >
+                  {showEditSuccess ? 'Profile Updated' : 'Edit Profile'}
+                </Button>
+                {showEditSuccess && (
+                  <div className="absolute top-full mt-2 left-0 right-0 animate-bounce text-center z-10">
+                    <span className="text-xs font-medium text-success-600 bg-success-50 px-2 py-1 rounded-full border border-success-100 shadow-sm whitespace-nowrap">
+                      Changes saved successfully!
+                    </span>
+                  </div>
+                )}
+              </div>
             )}
           </div>
         </CardBody>

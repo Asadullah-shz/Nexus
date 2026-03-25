@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { MessageCircle, Users, Calendar, Building2, MapPin, UserCircle, FileText, DollarSign, Send } from 'lucide-react';
+import { MessageCircle, Users, Calendar, Building2, MapPin, UserCircle, FileText, DollarSign, Send, CheckCircle } from 'lucide-react';
 import { Avatar } from '../../components/ui/Avatar';
 import { Button } from '../../components/ui/Button';
 import { Card, CardBody, CardHeader } from '../../components/ui/Card';
@@ -8,15 +8,26 @@ import { Badge } from '../../components/ui/Badge';
 import { useAuth } from '../../context/AuthContext';
 import { findUserById } from '../../data/users';
 import { createCollaborationRequest, getRequestsFromInvestor } from '../../data/collaborationRequests';
+import { getDocumentsByOwner, Doc } from '../../data/documents';
+import { PreviewModal } from '../../components/documents/PreviewModal';
 import { Entrepreneur } from '../../types';
 
 export const EntrepreneurProfile: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const { user: currentUser } = useAuth();
-  
+  const [isRequesting, setIsRequesting] = useState(false);
+  const [requestSent, setRequestSent] = useState(false);
+  const [previewDoc, setPreviewDoc] = useState<Doc | null>(null);
+  const [showEditSuccess, setShowEditSuccess] = useState(false);
+
+  const handleEditProfile = () => {
+    setShowEditSuccess(true);
+    setTimeout(() => setShowEditSuccess(false), 3000);
+  };
+
   // Fetch entrepreneur data
   const entrepreneur = findUserById(id || '') as Entrepreneur | null;
-  
+
   if (!entrepreneur || entrepreneur.role !== 'entrepreneur') {
     return (
       <div className="text-center py-12">
@@ -28,29 +39,33 @@ export const EntrepreneurProfile: React.FC = () => {
       </div>
     );
   }
-  
+
+  const entrepreneurDocs = getDocumentsByOwner(entrepreneur.id);
   const isCurrentUser = currentUser?.id === entrepreneur.id;
   const isInvestor = currentUser?.role === 'investor';
-  
+
   // Check if the current investor has already sent a request to this entrepreneur
-  const hasRequestedCollaboration = isInvestor && id 
+  const hasRequestedCollaboration = (isInvestor && id
     ? getRequestsFromInvestor(currentUser.id).some(req => req.entrepreneurId === id)
-    : false;
-  
+    : false) || requestSent;
+
   const handleSendRequest = () => {
     if (isInvestor && currentUser && id) {
-      createCollaborationRequest(
-        currentUser.id,
-        id,
-        `I'm interested in learning more about ${entrepreneur.startupName} and would like to explore potential investment opportunities.`
-      );
-      
-      // In a real app, we would refresh the data or update state
-      // For this demo, we'll force a page reload
-      window.location.reload();
+      setIsRequesting(true);
+
+      // Simulate API call for smoother UX
+      setTimeout(() => {
+        createCollaborationRequest(
+          currentUser.id,
+          id,
+          `I'm interested in learning more about ${entrepreneur.startupName} and would like to explore potential investment opportunities.`
+        );
+        setIsRequesting(false);
+        setRequestSent(true);
+      }, 800);
     }
   };
-  
+
   return (
     <div className="space-y-6 animate-fade-in">
       {/* Profile header */}
@@ -64,14 +79,14 @@ export const EntrepreneurProfile: React.FC = () => {
               status={entrepreneur.isOnline ? 'online' : 'offline'}
               className="mx-auto sm:mx-0"
             />
-            
+
             <div className="mt-4 sm:mt-0 text-center sm:text-left">
               <h1 className="text-2xl font-bold text-gray-900">{entrepreneur.name}</h1>
               <p className="text-gray-600 flex items-center justify-center sm:justify-start mt-1">
                 <Building2 size={16} className="mr-1" />
                 Founder at {entrepreneur.startupName}
               </p>
-              
+
               <div className="flex flex-wrap gap-2 justify-center sm:justify-start mt-3">
                 <Badge variant="primary">{entrepreneur.industry}</Badge>
                 <Badge variant="gray">
@@ -89,7 +104,7 @@ export const EntrepreneurProfile: React.FC = () => {
               </div>
             </div>
           </div>
-          
+
           <div className="mt-6 sm:mt-0 flex flex-col sm:flex-row gap-2 justify-center sm:justify-end">
             {!isCurrentUser && (
               <>
@@ -101,31 +116,44 @@ export const EntrepreneurProfile: React.FC = () => {
                     Message
                   </Button>
                 </Link>
-                
+
                 {isInvestor && (
                   <Button
                     leftIcon={<Send size={18} />}
+                    isLoading={isRequesting}
                     disabled={hasRequestedCollaboration}
                     onClick={handleSendRequest}
+                    variant={hasRequestedCollaboration ? 'outline' : 'primary'}
                   >
-                    {hasRequestedCollaboration ? 'Request Sent' : 'Request Collaboration'}
+                    {hasRequestedCollaboration ? 'Collaboration Requested' : 'Request Collaboration'}
                   </Button>
                 )}
               </>
             )}
-            
+
             {isCurrentUser && (
-              <Button
-                variant="outline"
-                leftIcon={<UserCircle size={18} />}
-              >
-                Edit Profile
-              </Button>
+              <div className="relative">
+                <Button
+                  variant="outline"
+                  leftIcon={showEditSuccess ? <CheckCircle size={18} className="text-success-500" /> : <UserCircle size={18} />}
+                  onClick={handleEditProfile}
+                  disabled={showEditSuccess}
+                >
+                  {showEditSuccess ? 'Profile Updated' : 'Edit Profile'}
+                </Button>
+                {showEditSuccess && (
+                  <div className="absolute top-full mt-2 left-0 right-0 animate-bounce text-center z-10">
+                    <span className="text-xs font-medium text-success-600 bg-success-50 px-2 py-1 rounded-full border border-success-100 shadow-sm whitespace-nowrap">
+                      Changes saved successfully!
+                    </span>
+                  </div>
+                )}
+              </div>
             )}
           </div>
         </CardBody>
       </Card>
-      
+
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Main content - left side */}
         <div className="lg:col-span-2 space-y-6">
@@ -138,7 +166,7 @@ export const EntrepreneurProfile: React.FC = () => {
               <p className="text-gray-700">{entrepreneur.bio}</p>
             </CardBody>
           </Card>
-          
+
           {/* Startup Description */}
           <Card>
             <CardHeader>
@@ -152,21 +180,21 @@ export const EntrepreneurProfile: React.FC = () => {
                     {entrepreneur?.pitchSummary?.split('.')[0]}.
                   </p>
                 </div>
-                
+
                 <div>
                   <h3 className="text-md font-medium text-gray-900">Solution</h3>
                   <p className="text-gray-700 mt-1">
                     {entrepreneur.pitchSummary}
                   </p>
                 </div>
-                
+
                 <div>
                   <h3 className="text-md font-medium text-gray-900">Market Opportunity</h3>
                   <p className="text-gray-700 mt-1">
                     The {entrepreneur.industry} market is experiencing significant growth, with a projected CAGR of 14.5% through 2027. Our solution addresses key pain points in this expanding market.
                   </p>
                 </div>
-                
+
                 <div>
                   <h3 className="text-md font-medium text-gray-900">Competitive Advantage</h3>
                   <p className="text-gray-700 mt-1">
@@ -176,7 +204,7 @@ export const EntrepreneurProfile: React.FC = () => {
               </div>
             </CardBody>
           </Card>
-          
+
           {/* Team */}
           <Card>
             <CardHeader className="flex justify-between items-center">
@@ -197,7 +225,7 @@ export const EntrepreneurProfile: React.FC = () => {
                     <p className="text-xs text-gray-500">Founder & CEO</p>
                   </div>
                 </div>
-                
+
                 <div className="flex items-center p-3 border border-gray-200 rounded-md">
                   <Avatar
                     src="https://images.pexels.com/photos/2379005/pexels-photo-2379005.jpeg"
@@ -210,7 +238,7 @@ export const EntrepreneurProfile: React.FC = () => {
                     <p className="text-xs text-gray-500">CTO</p>
                   </div>
                 </div>
-                
+
                 <div className="flex items-center p-3 border border-gray-200 rounded-md">
                   <Avatar
                     src="https://images.pexels.com/photos/773371/pexels-photo-773371.jpeg"
@@ -223,7 +251,7 @@ export const EntrepreneurProfile: React.FC = () => {
                     <p className="text-xs text-gray-500">Head of Product</p>
                   </div>
                 </div>
-                
+
                 {entrepreneur.teamSize > 3 && (
                   <div className="flex items-center justify-center p-3 border border-dashed border-gray-200 rounded-md">
                     <p className="text-sm text-gray-500">+ {entrepreneur.teamSize - 3} more team members</p>
@@ -233,7 +261,7 @@ export const EntrepreneurProfile: React.FC = () => {
             </CardBody>
           </Card>
         </div>
-        
+
         {/* Sidebar - right side */}
         <div className="space-y-6">
           {/* Funding Details */}
@@ -250,17 +278,17 @@ export const EntrepreneurProfile: React.FC = () => {
                     <p className="text-lg font-semibold text-gray-900">{entrepreneur.fundingNeeded}</p>
                   </div>
                 </div>
-                
+
                 <div>
                   <span className="text-sm text-gray-500">Valuation</span>
                   <p className="text-md font-medium text-gray-900">$8M - $12M</p>
                 </div>
-                
+
                 <div>
                   <span className="text-sm text-gray-500">Previous Funding</span>
                   <p className="text-md font-medium text-gray-900">$750K Seed (2022)</p>
                 </div>
-                
+
                 <div className="pt-3 border-t border-gray-100">
                   <span className="text-sm text-gray-500">Funding Timeline</span>
                   <div className="mt-2 space-y-2">
@@ -281,7 +309,7 @@ export const EntrepreneurProfile: React.FC = () => {
               </div>
             </CardBody>
           </Card>
-          
+
           {/* Documents */}
           <Card>
             <CardHeader>
@@ -289,46 +317,33 @@ export const EntrepreneurProfile: React.FC = () => {
             </CardHeader>
             <CardBody>
               <div className="space-y-3">
-                <div className="flex items-center p-3 border border-gray-200 rounded-md hover:bg-gray-50 transition-colors">
-                  <div className="p-2 bg-primary-50 rounded-md mr-3">
-                    <FileText size={18} className="text-primary-700" />
+                {entrepreneurDocs.length > 0 ? (
+                  entrepreneurDocs.map(doc => (
+                    <div key={doc.id} className="flex items-center p-3 border border-gray-200 rounded-md hover:bg-gray-50 transition-colors">
+                      <div className="p-2 bg-primary-50 rounded-md mr-3">
+                        <FileText size={18} className="text-primary-700" />
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="text-sm font-medium text-gray-900">{doc.name}</h3>
+                        <p className="text-xs text-gray-500">Updated {doc.uploadedAt}</p>
+                      </div>
+                      <Button variant="outline" size="sm" onClick={() => setPreviewDoc(doc)}>View</Button>
+                    </div>
+                  ))
+                ) : (
+                  <div className="text-center py-6 text-gray-500">
+                    <FileText size={24} className="mx-auto mb-2 opacity-20" />
+                    <p className="text-sm">No documents available</p>
                   </div>
-                  <div className="flex-1">
-                    <h3 className="text-sm font-medium text-gray-900">Pitch Deck</h3>
-                    <p className="text-xs text-gray-500">Updated 2 months ago</p>
-                  </div>
-                  <Button variant="outline" size="sm">View</Button>
-                </div>
-                
-                <div className="flex items-center p-3 border border-gray-200 rounded-md hover:bg-gray-50 transition-colors">
-                  <div className="p-2 bg-primary-50 rounded-md mr-3">
-                    <FileText size={18} className="text-primary-700" />
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="text-sm font-medium text-gray-900">Business Plan</h3>
-                    <p className="text-xs text-gray-500">Updated 1 month ago</p>
-                  </div>
-                  <Button variant="outline" size="sm">View</Button>
-                </div>
-                
-                <div className="flex items-center p-3 border border-gray-200 rounded-md hover:bg-gray-50 transition-colors">
-                  <div className="p-2 bg-primary-50 rounded-md mr-3">
-                    <FileText size={18} className="text-primary-700" />
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="text-sm font-medium text-gray-900">Financial Projections</h3>
-                    <p className="text-xs text-gray-500">Updated 2 weeks ago</p>
-                  </div>
-                  <Button variant="outline" size="sm">View</Button>
-                </div>
+                )}
               </div>
-              
+
               {!isCurrentUser && isInvestor && (
                 <div className="mt-4 pt-4 border-t border-gray-100">
                   <p className="text-sm text-gray-500">
                     Request access to detailed documents and financials by sending a collaboration request.
                   </p>
-                  
+
                   {!hasRequestedCollaboration ? (
                     <Button
                       className="mt-3 w-full"
@@ -350,6 +365,14 @@ export const EntrepreneurProfile: React.FC = () => {
           </Card>
         </div>
       </div>
+
+      {previewDoc && (
+        <PreviewModal
+          doc={previewDoc}
+          onClose={() => setPreviewDoc(null)}
+          showSignButton={isCurrentUser} // Only owner can see sign button here, or maybe none at all on profile
+        />
+      )}
     </div>
   );
 };

@@ -7,7 +7,6 @@ import { Input } from '../../components/ui/Input';
 import { Badge } from '../../components/ui/Badge';
 import { EntrepreneurCard } from '../../components/entrepreneur/EntrepreneurCard';
 import { useAuth } from '../../context/AuthContext';
-import { Entrepreneur } from '../../types';
 import { entrepreneurs } from '../../data/users';
 import { getRequestsFromInvestor } from '../../data/collaborationRequests';
 
@@ -20,7 +19,6 @@ export const InvestorDashboard: React.FC = () => {
   
   // Get collaboration requests sent by this investor
   const sentRequests = getRequestsFromInvestor(user.id);
-  const requestedEntrepreneurIds = sentRequests.map(req => req.entrepreneurId);
   
   // Filter entrepreneurs based on search and industry filters
   const filteredEntrepreneurs = entrepreneurs.filter(entrepreneur => {
@@ -68,7 +66,7 @@ export const InvestorDashboard: React.FC = () => {
       </div>
       
       {/* Filters and search */}
-      <div className="flex flex-col md:flex-row gap-4">
+      <div className="flex flex-col md:flex-row gap-4 items-center">
         <div className="w-full md:w-2/3">
           <Input
             placeholder="Search startups, industries, or keywords..."
@@ -76,11 +74,12 @@ export const InvestorDashboard: React.FC = () => {
             onChange={(e) => setSearchQuery(e.target.value)}
             fullWidth
             startAdornment={<Search size={18} />}
+            inputClassName="h-11"
           />
         </div>
         
         <div className="w-full md:w-1/3">
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center gap-2">
             <Filter size={18} className="text-gray-500" />
             <span className="text-sm font-medium text-gray-700">Filter by:</span>
             

@@ -1,4 +1,3 @@
-import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 
@@ -6,7 +5,7 @@ import { AuthProvider } from './context/AuthContext';
 import { DashboardLayout } from './components/layout/DashboardLayout';
 
 // Auth Pages
-import { LoginPage } from './pages/auth/LoginPage';
+import { EnhancedLoginPage } from './pages/auth/LoginPage';
 import { RegisterPage } from './pages/auth/RegisterPage';
 
 // Dashboard Pages
@@ -22,10 +21,15 @@ import { InvestorsPage } from './pages/investors/InvestorsPage';
 import { EntrepreneursPage } from './pages/entrepreneurs/EntrepreneursPage';
 import { MessagesPage } from './pages/messages/MessagesPage';
 import { NotificationsPage } from './pages/notifications/NotificationsPage';
-import { DocumentsPage } from './pages/documents/DocumentsPage';
+import { DocumentChamberPage } from './pages/documents/DocumentsChamber';
 import { SettingsPage } from './pages/settings/SettingsPage';
 import { HelpPage } from './pages/help/HelpPage';
 import { DealsPage } from './pages/deals/DealsPage';
+
+// New Feature Pages
+import { CalendarPage } from './pages/calendar/CalendarPage';
+import { VideoCallPage } from './pages/video/VideoCallPage';
+import { PaymentsPage } from './pages/payments/PaymentPage';
 
 // Chat Pages
 import { ChatPage } from './pages/chat/ChatPage';
@@ -36,7 +40,7 @@ function App() {
       <Router>
         <Routes>
           {/* Authentication Routes */}
-          <Route path="/login" element={<LoginPage />} />
+          <Route path="/login" element={<EnhancedLoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
           
           {/* Dashboard Routes */}
@@ -68,8 +72,10 @@ function App() {
             <Route index element={<NotificationsPage />} />
           </Route>
           
-          <Route path="/documents" element={<DashboardLayout />}>
-            <Route index element={<DocumentsPage />} />
+          
+
+          <Route path="/document-chamber" element={<DashboardLayout />}>
+            <Route index element={<DocumentChamberPage />} />
           </Route>
           
           <Route path="/settings" element={<DashboardLayout />}>
@@ -83,6 +89,19 @@ function App() {
           <Route path="/deals" element={<DashboardLayout />}>
             <Route index element={<DealsPage />} />
           </Route>
+
+          {/* New Routes */}
+          <Route path="/calendar" element={<DashboardLayout />}>
+            <Route index element={<CalendarPage />} />
+          </Route>
+
+          <Route path="/video-call" element={<DashboardLayout />}>
+            <Route index element={<VideoCallPage />} />
+          </Route>
+
+          <Route path="/payments" element={<DashboardLayout />}>
+            <Route index element={<PaymentsPage />} />
+          </Route>
           
           {/* Chat Routes */}
           <Route path="/chat" element={<DashboardLayout />}>
@@ -92,8 +111,6 @@ function App() {
           
           {/* Redirect root to login */}
           <Route path="/" element={<Navigate to="/login" replace />} />
-          
-          {/* Catch all other routes and redirect to login */}
           <Route path="*" element={<Navigate to="/login" replace />} />
         </Routes>
       </Router>

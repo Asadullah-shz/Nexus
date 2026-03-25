@@ -62,6 +62,27 @@ export const DealsPage: React.FC = () => {
     );
   };
   
+  const filteredDeals = deals.filter(deal => {
+    const matchesSearch = searchQuery === '' || 
+      deal.startup.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      deal.startup.industry.toLowerCase().includes(searchQuery.toLowerCase());
+    
+    const matchesStatus = selectedStatus.length === 0 || 
+      selectedStatus.includes(deal.status);
+    
+    return matchesSearch && matchesStatus;
+  });
+
+  const stats = {
+    totalInvestment: deals.reduce((sum, d) => {
+      const val = parseFloat(d.amount.replace('$', '').replace('M', '')) * (d.amount.includes('M') ? 1000000 : 1000);
+      return sum + val;
+    }, 0),
+    activeCount: deals.filter(d => d.status !== 'Closed' && d.status !== 'Passed').length,
+    portfolioCount: deals.filter(d => d.status === 'Closed').length + 12, // +12 historical
+    closedThisMonth: deals.filter(d => d.status === 'Closed' && d.lastActivity.includes('2024-02')).length
+  };
+  
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'Due Diligence':
@@ -101,8 +122,8 @@ export const DealsPage: React.FC = () => {
                 <DollarSign size={20} className="text-primary-600" />
               </div>
               <div>
-                <p className="text-sm text-gray-600">Total Investment</p>
-                <p className="text-lg font-semibold text-gray-900">$4.3M</p>
+                <p className="text-sm text-gray-600">Total Pipeline</p>
+                <p className="text-lg font-semibold text-gray-900">${(stats.totalInvestment / 1000000).toFixed(1)}M</p>
               </div>
             </div>
           </CardBody>
@@ -115,8 +136,8 @@ export const DealsPage: React.FC = () => {
                 <TrendingUp size={20} className="text-secondary-600" />
               </div>
               <div>
-                <p className="text-sm text-gray-600">Active Deals</p>
-                <p className="text-lg font-semibold text-gray-900">8</p>
+                <p className="text-sm text-gray-600">In Pipeline</p>
+                <p className="text-lg font-semibold text-gray-900">{stats.activeCount}</p>
               </div>
             </div>
           </CardBody>
@@ -130,7 +151,7 @@ export const DealsPage: React.FC = () => {
               </div>
               <div>
                 <p className="text-sm text-gray-600">Portfolio Companies</p>
-                <p className="text-lg font-semibold text-gray-900">12</p>
+                <p className="text-lg font-semibold text-gray-900">{stats.portfolioCount}</p>
               </div>
             </div>
           </CardBody>
@@ -143,8 +164,8 @@ export const DealsPage: React.FC = () => {
                 <Calendar size={20} className="text-success-600" />
               </div>
               <div>
-                <p className="text-sm text-gray-600">Closed This Month</p>
-                <p className="text-lg font-semibold text-gray-900">2</p>
+                <p className="text-sm text-gray-600">Recently Closed</p>
+                <p className="text-lg font-semibold text-gray-900">{stats.closedThisMonth}</p>
               </div>
             </div>
           </CardBody>
@@ -152,13 +173,14 @@ export const DealsPage: React.FC = () => {
       </div>
       
       {/* Filters */}
-      <div className="flex flex-col md:flex-row gap-4">
+      <div className="flex flex-col md:flex-row gap-4 items-center">
         <div className="w-full md:w-2/3">
           <Input
             placeholder="Search deals by startup name or industry..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             startAdornment={<Search size={18} />}
+            inputClassName="h-11"
             fullWidth
           />
         </div>
@@ -216,34 +238,34 @@ export const DealsPage: React.FC = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
-                {deals.map(deal => (
-                  <tr key={deal.id} className="hover:bg-gray-50">
+                {filteredDeals.map(deal => (
+                  <tr key={deal.id} className="hover:bg-gray-50 group transition-colors">
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="flex items-center">
                         <Avatar
                           src={deal.startup.logo}
                           alt={deal.startup.name}
                           size="sm"
-                          className="flex-shrink-0"
+                          className="flex-shrink-0 ring-2 ring-transparent group-hover:ring-primary-500/20 transition-all"
                         />
                         <div className="ml-4">
-                          <div className="text-sm font-medium text-gray-900">
+                          <div className="text-sm font-bold text-gray-900 group-hover:text-primary-600 transition-colors">
                             {deal.startup.name}
                           </div>
-                          <div className="text-sm text-gray-500">
+                          <div className="text-xs text-gray-500">
                             {deal.startup.industry}
                           </div>
                         </div>
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">{deal.amount}</div>
+                      <div className="text-sm font-semibold text-gray-900">{deal.amount}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="text-sm text-gray-900">{deal.equity}</div>
+                      <div className="text-sm text-gray-600">{deal.equity}</div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <Badge variant={getStatusColor(deal.status)}>
+                      <Badge variant={getStatusColor(deal.status)} className="shadow-sm">
                         {deal.status}
                       </Badge>
                     </td>
@@ -252,16 +274,37 @@ export const DealsPage: React.FC = () => {
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm text-gray-500">
-                        {new Date(deal.lastActivity).toLocaleDateString()}
+                        {new Date(deal.lastActivity).toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' })}
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <Button variant="outline" size="sm">
+                      <Button variant="outline" size="sm" className="opacity-0 group-hover:opacity-100 transition-opacity">
                         View Details
                       </Button>
                     </td>
                   </tr>
                 ))}
+                {filteredDeals.length === 0 && (
+                  <tr>
+                    <td colSpan={7} className="px-6 py-12 text-center">
+                      <div className="flex flex-col items-center">
+                        <div className="bg-gray-100 p-4 rounded-full mb-3">
+                          <Search size={32} className="text-gray-400" />
+                        </div>
+                        <p className="text-gray-900 font-medium">No deals found</p>
+                        <p className="text-gray-500 text-sm mt-1">Try adjusting your search or filters</p>
+                        <Button 
+                          variant="ghost" 
+                          size="sm" 
+                          className="mt-4 text-primary-600"
+                          onClick={() => {setSearchQuery(''); setSelectedStatus([]);}}
+                        >
+                          Clear all filters
+                        </Button>
+                      </div>
+                    </td>
+                  </tr>
+                )}
               </tbody>
             </table>
           </div>

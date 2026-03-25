@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Search, Filter, MapPin } from 'lucide-react';
 import { Input } from '../../components/ui/Input';
+import { Button } from '../../components/ui/Button';
 import { Card, CardHeader, CardBody } from '../../components/ui/Card';
 import { Badge } from '../../components/ui/Badge';
 import { InvestorCard } from '../../components/investor/InvestorCard';
@@ -10,6 +11,9 @@ export const InvestorsPage: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedStages, setSelectedStages] = useState<string[]>([]);
   const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
+  const [selectedLocations, setSelectedLocations] = useState<string[]>([]);
+  
+  const LOCATIONS = ['San Francisco, CA', 'New York, NY', 'Boston, MA', 'London, UK', 'Austin, TX'];
   
   // Get unique investment stages and interests
   const allStages = Array.from(new Set(investors.flatMap(i => i.investmentStage)));
@@ -30,7 +34,12 @@ export const InvestorsPage: React.FC = () => {
     const matchesInterests = selectedInterests.length === 0 ||
       investor.investmentInterests.some(interest => selectedInterests.includes(interest));
     
-    return matchesSearch && matchesStages && matchesInterests;
+    // Note: In a real app, 'location' would be a field on the investor object.
+    // For this demo, we'll simulate location matching.
+    const matchesLocation = selectedLocations.length === 0 || 
+      selectedLocations.some(loc => investor.bio.includes(loc.split(',')[0]));
+    
+    return matchesSearch && matchesStages && matchesInterests && matchesLocation;
   });
   
   const toggleStage = (stage: string) => {
@@ -46,6 +55,14 @@ export const InvestorsPage: React.FC = () => {
       prev.includes(interest)
         ? prev.filter(i => i !== interest)
         : [...prev, interest]
+    );
+  };
+
+  const toggleLocation = (loc: string) => {
+    setSelectedLocations(prev => 
+      prev.includes(loc)
+        ? prev.filter(l => l !== loc)
+        : [...prev, loc]
     );
   };
   
@@ -101,19 +118,21 @@ export const InvestorsPage: React.FC = () => {
               
               <div>
                 <h3 className="text-sm font-medium text-gray-900 mb-2">Location</h3>
-                <div className="space-y-2">
-                  <button className="flex items-center w-full text-left px-3 py-2 rounded-md text-sm text-gray-700 hover:bg-gray-50">
-                    <MapPin size={16} className="mr-2" />
-                    San Francisco, CA
-                  </button>
-                  <button className="flex items-center w-full text-left px-3 py-2 rounded-md text-sm text-gray-700 hover:bg-gray-50">
-                    <MapPin size={16} className="mr-2" />
-                    New York, NY
-                  </button>
-                  <button className="flex items-center w-full text-left px-3 py-2 rounded-md text-sm text-gray-700 hover:bg-gray-50">
-                    <MapPin size={16} className="mr-2" />
-                    Boston, MA
-                  </button>
+                <div className="space-y-1">
+                  {LOCATIONS.map(loc => (
+                    <button
+                      key={loc}
+                      onClick={() => toggleLocation(loc)}
+                      className={`flex items-center w-full text-left px-3 py-2 rounded-lg text-sm transition-all duration-200 ${
+                        selectedLocations.includes(loc)
+                          ? 'bg-primary-50 text-primary-700 font-medium'
+                          : 'text-gray-600 hover:bg-gray-50'
+                      }`}
+                    >
+                      <MapPin size={14} className={`mr-2 transition-colors ${selectedLocations.includes(loc) ? 'text-primary-500' : 'text-gray-400'}`} />
+                      {loc}
+                    </button>
+                  ))}
                 </div>
               </div>
             </CardBody>
@@ -128,6 +147,7 @@ export const InvestorsPage: React.FC = () => {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               startAdornment={<Search size={18} />}
+              inputClassName="h-11"
               fullWidth
             />
             
@@ -140,12 +160,28 @@ export const InvestorsPage: React.FC = () => {
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {filteredInvestors.map(investor => (
-              <InvestorCard
-                key={investor.id}
-                investor={investor}
-              />
+            {filteredInvestors.map((investor, idx) => (
+              <div key={investor.id} className="animate-fade-in" style={{ animationDelay: `${idx * 50}ms` }}>
+                <InvestorCard
+                  investor={investor}
+                />
+              </div>
             ))}
+            {filteredInvestors.length === 0 && (
+              <div className="col-span-full py-12 text-center bg-gray-50 rounded-2xl border-2 border-dashed border-gray-200">
+                <Search size={40} className="mx-auto text-gray-300 mb-3" />
+                <h3 className="text-lg font-medium text-gray-900">No investors found</h3>
+                <p className="text-gray-500 mt-1">Try broadening your search or adjusting the filters.</p>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="mt-4"
+                  onClick={() => {setSearchQuery(''); setSelectedStages([]); setSelectedInterests([]); setSelectedLocations([]);}}
+                >
+                  Clear all filters
+                </Button>
+              </div>
+            )}
           </div>
         </div>
       </div>

@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useParams } from 'react-router-dom';
-import { Send, Phone, Video, Info, Smile } from 'lucide-react';
+import { useParams, Link, useNavigate } from 'react-router-dom';
+import { Send, Phone, Video, Info, Smile, ChevronLeft, Search } from 'lucide-react';
 import { Avatar } from '../../components/ui/Avatar';
 import { Button } from '../../components/ui/Button';
 import { Input } from '../../components/ui/Input';
@@ -18,7 +18,18 @@ export const ChatPage: React.FC = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const [conversations, setConversations] = useState<any[]>([]);
+  const [showSidebar, setShowSidebar] = useState(true);
   const messagesEndRef = useRef<null | HTMLDivElement>(null);
+  const navigate = useNavigate();
+
+  // If we have a userId, we should show the chat on mobile, otherwise show the sidebar
+  useEffect(() => {
+    if (userId) {
+      setShowSidebar(false);
+    } else {
+      setShowSidebar(true);
+    }
+  }, [userId]);
   
   const chatPartner = userId ? findUserById(userId) : null;
   
@@ -64,17 +75,32 @@ export const ChatPage: React.FC = () => {
   return (
     <div className="flex h-[calc(100vh-4rem)] bg-white border border-gray-200 rounded-lg overflow-hidden animate-fade-in">
       {/* Conversations sidebar */}
-      <div className="hidden md:block w-1/3 lg:w-1/4 border-r border-gray-200">
+      <div className={`${showSidebar ? 'block' : 'hidden'} md:block w-full md:w-1/3 lg:w-1/4 border-r border-gray-200 bg-white z-20`}>
+        <div className="p-4 border-b border-gray-200 md:hidden flex items-center justify-between">
+          <h1 className="text-xl font-bold text-gray-900">Messages</h1>
+          <Button variant="ghost" size="sm" className="rounded-full p-2">
+            <Search size={20} />
+          </Button>
+        </div>
         <ChatUserList conversations={conversations} />
       </div>
       
       {/* Main chat area */}
-      <div className="flex-1 flex flex-col">
+      <div className={`${!showSidebar ? 'flex' : 'hidden'} md:flex flex-1 flex-col relative`}>
         {/* Chat header */}
         {chatPartner ? (
           <>
-            <div className="border-b border-gray-200 p-4 flex justify-between items-center">
+            <div className="border-b border-gray-200 p-4 flex justify-between items-center bg-white/80 backdrop-blur-md sticky top-0 z-10">
               <div className="flex items-center">
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="md:hidden mr-2 p-1 rounded-full"
+                  onClick={() => navigate('/messages')}
+                >
+                  <ChevronLeft size={24} />
+                </Button>
+                
                 <Avatar
                   src={chatPartner.avatarUrl}
                   alt={chatPartner.name}
@@ -84,9 +110,9 @@ export const ChatPage: React.FC = () => {
                 />
                 
                 <div>
-                  <h2 className="text-lg font-medium text-gray-900">{chatPartner.name}</h2>
-                  <p className="text-sm text-gray-500">
-                    {chatPartner.isOnline ? 'Online' : 'Last seen recently'}
+                  <h2 className="text-lg font-bold text-gray-900 leading-tight">{chatPartner.name}</h2>
+                  <p className="text-xs text-success-600 font-medium">
+                    {chatPartner.isOnline ? 'Active now' : 'Offline'}
                   </p>
                 </div>
               </div>
@@ -95,25 +121,27 @@ export const ChatPage: React.FC = () => {
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="rounded-full p-2"
+                  className="rounded-full p-2 hover:bg-primary-50 hover:text-primary-600 transition-colors"
                   aria-label="Voice call"
                 >
                   <Phone size={18} />
                 </Button>
                 
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="rounded-full p-2"
-                  aria-label="Video call"
-                >
-                  <Video size={18} />
-                </Button>
+                <Link to="/video">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="rounded-full p-2 hover:bg-primary-50 hover:text-primary-600 transition-colors text-primary-600"
+                    aria-label="Video call"
+                  >
+                    <Video size={18} />
+                  </Button>
+                </Link>
                 
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="rounded-full p-2"
+                  className="rounded-full p-2 hover:bg-gray-100 transition-colors"
                   aria-label="Info"
                 >
                   <Info size={18} />

@@ -79,3 +79,40 @@ export interface AuthContextType {
   isAuthenticated: boolean;
   isLoading: boolean;
 }
+
+// Notification Types
+export type NotificationType = 'message' | 'connection' | 'investment' | 'document';
+
+export interface Notification {
+  id: string;
+  type: NotificationType;
+  userId: string;
+  targetId: string;
+  content: string;
+  time: string;
+  unread: boolean;
+}
+
+// Deal Types
+export interface Deal {
+  id: number;
+  startup: {
+    name: string;
+    logo: string;
+    industry: string;
+  };
+  amount: string;
+  equity: string;
+  status: string;
+  stage: string;
+  lastActivity: string;
+}
+
+// Video Call Types
+export interface Participant {
+  id: string;
+  name: string;
+  avatar: string;
+  isMuted: boolean;
+  isVideoOff: boolean;
+}
