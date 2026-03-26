@@ -52,18 +52,17 @@ export const Navbar: React.FC = () => {
 
   return (
     <nav className="bg-white border-b border-gray-200 shadow-md transition-colors duration-300" data-tour="navbar">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
-          {}
-          <div className="flex-shrink-0 flex items-center">
-            <Link to="/" className="flex items-center space-x-2">
-              <div className="w-8 h-8 bg-primary-600 rounded-md flex items-center justify-center">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <div className="flex-shrink-0 flex items-center w-64 -ml-4 sm:-ml-6 lg:-ml-8 bg-white">
+            <Link to="/" className="flex items-center space-x-2 px-4 sm:px-6 lg:px-8">
+              <div className="w-8 h-8 bg-primary-600 rounded-md flex items-center justify-center text-white shadow-sm shadow-primary-200">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="-mt-0.5">
                   <path d="M20 7H4C2.89543 7 2 7.89543 2 9V19C2 20.1046 2.89543 21 4 21H20C21.1046 21 22 20.1046 22 19V9C22 7.89543 21.1046 7 20 7Z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                   <path d="M16 21V5C16 3.89543 15.1046 3 14 3H10C8.89543 3 8 3.89543 8 5V21" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                 </svg>
               </div>
-              <span className="text-lg font-bold text-gray-900">Business Nexus</span>
+              <span className="text-lg font-bold text-gray-900 tracking-tight">Business Nexus</span>
             </Link>
           </div>
 
