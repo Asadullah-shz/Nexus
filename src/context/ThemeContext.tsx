@@ -36,17 +36,14 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   useEffect(() => {
     localStorage.setItem('nexus-accent', accentColor);
     
-    // Clear legacy theme settings
     if (localStorage.getItem('nexus-theme')) {
       localStorage.removeItem('nexus-theme');
     }
 
     const root = window.document.documentElement;
     
-    // Ensure Dark Mode is always disabled
     root.classList.remove('dark');
 
-    // Handle Accent Color
     const palette = ACCENT_PALETTES[accentColor];
     
     const hexToRgb = (hex: string) => {

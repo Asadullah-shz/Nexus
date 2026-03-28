@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { useDropzone } from 'react-dropzone';
 import {
   FileText, Upload, Eye, PenLine, CheckCircle, Clock, AlertCircle,
@@ -7,7 +7,7 @@ import {
 import { Card, CardBody, CardHeader } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { Badge } from '../../components/ui/Badge';
-import { INITIAL_DOCS, Doc, DocStatus } from '../../data/documents';
+import { Doc, DocStatus, addDocument, getDocumentsByOwner, updateDocStatus, deleteDocument } from '../../data/documents';
 import { useAuth } from '../../context/AuthContext';
 import { PreviewModal } from '../../components/documents/PreviewModal';
 
@@ -130,23 +130,38 @@ const SignaturePad: React.FC<{ onSign: (sig: string) => void; onClose: () => voi
 
 export const DocumentChamberPage: React.FC = () => {
   const { user } = useAuth();
-  const [docs, setDocs] = useState<Doc[]>(INITIAL_DOCS);
+  const [docs, setDocs] = useState<Doc[]>([]);
   const [previewDoc, setPreviewDoc] = useState<Doc | null>(null);
   const [signingDoc, setSigningDoc] = useState<Doc | null>(null);
   const [statusFilter, setStatusFilter] = useState<DocStatus | 'All'>('All');
 
+  const refreshDocs = useCallback(() => {
+    if (user) {
+      setDocs(getDocumentsByOwner(user.id));
+    }
+  }, [user]);
+
+  useEffect(() => {
+    refreshDocs();
+  }, [refreshDocs]);
+
   const onDrop = useCallback((acceptedFiles: File[]) => {
-    const newDocs: Doc[] = acceptedFiles.map((file, i) => ({
-      id: `uploaded-${Date.now()}-${i}`,
-      name: file.name,
-      type: file.name.endsWith('.pdf') ? 'PDF' : 'Document',
-      size: `${(file.size / 1024 / 1024).toFixed(1)} MB`,
-      uploadedAt: new Date().toISOString().split('T')[0],
-      status: 'Draft',
-      ownerId: user?.id || 'unknown'
-    }));
-    setDocs(d => [...newDocs, ...d]);
-  }, []);
+    if (!user) return;
+    
+    acceptedFiles.forEach((file, i) => {
+      const newDoc: Doc = {
+        id: `uploaded-${Date.now()}-${i}`,
+        name: file.name,
+        type: file.name.endsWith('.pdf') ? 'PDF' : 'Document',
+        size: `${(file.size / 1024 / 1024).toFixed(1)} MB`,
+        uploadedAt: new Date().toISOString().split('T')[0],
+        status: 'Draft',
+        ownerId: user.id
+      };
+      addDocument(newDoc);
+    });
+    refreshDocs();
+  }, [user, refreshDocs]);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
@@ -154,20 +169,20 @@ export const DocumentChamberPage: React.FC = () => {
   });
 
   const handleSign = (docId: string) => {
-    setDocs(d => d.map(doc => doc.id === docId
-      ? { ...doc, status: 'Signed', signedBy: [...(doc.signedBy || []), 'You'] }
-      : doc
-    ));
+    updateDocStatus(docId, 'Signed', ['You']);
+    refreshDocs();
     setSigningDoc(null);
     setPreviewDoc(null);
   };
 
   const updateStatus = (docId: string, status: DocStatus) => {
-    setDocs(d => d.map(doc => doc.id === docId ? { ...doc, status } : doc));
+    updateDocStatus(docId, status);
+    refreshDocs();
   };
 
-  const deleteDoc = (docId: string) => {
-    setDocs(d => d.filter(doc => doc.id !== docId));
+  const handleDelete = (docId: string) => {
+    deleteDocument(docId);
+    refreshDocs();
   };
 
   const filteredDocs = statusFilter === 'All' ? docs : docs.filter(d => d.status === statusFilter);
@@ -179,6 +194,8 @@ export const DocumentChamberPage: React.FC = () => {
     Signed: docs.filter(d => d.status === 'Signed').length,
   };
 
+  if (!user) return null;
+
   return (
     <div className="space-y-6 animate-fade-in">
       <div className="flex justify-between items-center">
@@ -188,7 +205,6 @@ export const DocumentChamberPage: React.FC = () => {
         </div>
       </div>
 
-      {}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {(['All', 'Draft', 'In Review', 'Signed'] as const).map(s => (
           <button
@@ -206,7 +222,6 @@ export const DocumentChamberPage: React.FC = () => {
         ))}
       </div>
 
-      {}
       <div
         {...getRootProps()}
         className={`border-2 border-dashed rounded-xl p-8 text-center transition-colors cursor-pointer ${
@@ -223,7 +238,6 @@ export const DocumentChamberPage: React.FC = () => {
         <p className="text-xs text-gray-500 mt-1">Supports PDF, DOC, DOCX</p>
       </div>
 
-      {}
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
@@ -269,7 +283,6 @@ export const DocumentChamberPage: React.FC = () => {
                     </div>
 
                     <div className="flex items-center gap-2 ml-4">
-                      {}
                       {doc.status !== 'Signed' && (
                         <div className="relative group">
                           <button className="flex items-center gap-1 text-xs text-gray-500 hover:text-gray-700 border border-gray-200 rounded px-2 py-1">
@@ -317,7 +330,7 @@ export const DocumentChamberPage: React.FC = () => {
                       </button>
 
                       <button
-                        onClick={() => deleteDoc(doc.id)}
+                        onClick={() => handleDelete(doc.id)}
                         className="p-1.5 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                         title="Delete"
                       >
@@ -332,7 +345,6 @@ export const DocumentChamberPage: React.FC = () => {
         </CardBody>
       </Card>
 
-      {}
       {previewDoc && (
         <PreviewModal
           doc={previewDoc}

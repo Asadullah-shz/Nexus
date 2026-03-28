@@ -1,11 +1,13 @@
 import { CollaborationRequest } from '../types';
 
-export const collaborationRequests: CollaborationRequest[] = [
+const STORAGE_KEY = 'nexus_collaboration_requests';
+
+const initialRequests: CollaborationRequest[] = [
   {
     id: 'req1',
     investorId: 'i1',
     entrepreneurId: 'e1',
-    message: 'Id like to explore potential investment in TechWave AI. Your AI-driven financial analytics platform aligns well with my investment thesis.',
+    message: 'Id like to explore potential investment in NexusWave. Your Smart financial analytics platform aligns well with my investment thesis.',
     status: 'pending',
     createdAt: '2023-08-10T15:30:00Z'
   },
@@ -13,7 +15,7 @@ export const collaborationRequests: CollaborationRequest[] = [
     id: 'req2',
     investorId: 'i2',
     entrepreneurId: 'e1',
-    message: 'Interested in discussing how TechWave AI can incorporate sustainable practices. Lets connect to explore potential collaboration.',
+    message: 'Interested in discussing how NexusWave can incorporate sustainable practices. Lets connect to explore potential collaboration.',
     status: 'accepted',
     createdAt: '2023-08-05T11:45:00Z'
   },
@@ -43,21 +45,32 @@ export const collaborationRequests: CollaborationRequest[] = [
   }
 ];
 
-// Helper function to get collaboration requests for an entrepreneur
+const getStoredRequests = (): CollaborationRequest[] => {
+  if (typeof window === 'undefined') return initialRequests;
+  const stored = localStorage.getItem(STORAGE_KEY);
+  return stored ? JSON.parse(stored) : initialRequests;
+};
+
+export let collaborationRequests: CollaborationRequest[] = getStoredRequests();
+
+const saveRequests = () => {
+  if (typeof window !== 'undefined') {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(collaborationRequests));
+  }
+};
+
 export const getRequestsForEntrepreneur = (entrepreneurId: string): CollaborationRequest[] => {
   return collaborationRequests
     .filter(request => request.entrepreneurId === entrepreneurId)
     .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 };
 
-// Helper function to get collaboration requests sent by an investor
 export const getRequestsFromInvestor = (investorId: string): CollaborationRequest[] => {
   return collaborationRequests
     .filter(request => request.investorId === investorId)
     .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
 };
 
-// Helper function to update a collaboration request status
 export const updateRequestStatus = (requestId: string, newStatus: 'pending' | 'accepted' | 'rejected'): CollaborationRequest | null => {
   const requestIndex = collaborationRequests.findIndex(req => req.id === requestId);
   if (requestIndex === -1) return null;
@@ -67,17 +80,17 @@ export const updateRequestStatus = (requestId: string, newStatus: 'pending' | 'a
     status: newStatus
   };
   
+  saveRequests();
   return collaborationRequests[requestIndex];
 };
 
-// Helper function to create a new collaboration request
 export const createCollaborationRequest = (
   investorId: string,
   entrepreneurId: string,
   message: string
 ): CollaborationRequest => {
   const newRequest: CollaborationRequest = {
-    id: `req${collaborationRequests.length + 1}`,
+    id: `req${Date.now()}`,
     investorId,
     entrepreneurId,
     message,
@@ -86,5 +99,6 @@ export const createCollaborationRequest = (
   };
   
   collaborationRequests.push(newRequest);
+  saveRequests();
   return newRequest;
-};
+};

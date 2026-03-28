@@ -53,7 +53,7 @@ const initialRequests: MeetingRequest[] = [
     date: '2024-03-20',
     time: '2:00 PM',
     status: 'pending',
-    topic: 'Investment discussion for TechWave AI'
+    topic: 'Investment discussion for NexusWave'
   },
   {
     id: 'mr2',

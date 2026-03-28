@@ -1,6 +1,8 @@
-import { Entrepreneur, Investor } from '../types';
+import { Entrepreneur, Investor, User } from '../types';
 
-export const entrepreneurs: Entrepreneur[] = [
+const USERS_STORAGE_KEY = 'nexus_users_data';
+
+const initialEntrepreneurs: Entrepreneur[] = [
   {
     id: 'e1',
     name: 'Sarah Johnson',
@@ -8,8 +10,8 @@ export const entrepreneurs: Entrepreneur[] = [
     role: 'entrepreneur',
     avatarUrl: 'https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg',
     bio: 'Serial entrepreneur with 10+ years of experience in SaaS and fintech.',
-    startupName: 'TechWave AI',
-    pitchSummary: 'AI-powered financial analytics platform helping SMBs make data-driven decisions.',
+    startupName: 'NexusWave',
+    pitchSummary: 'Smart financial analytics platform helping SMBs make data-driven decisions.',
     fundingNeeded: '$1.5M',
     industry: 'FinTech',
     location: 'San Francisco, CA',
@@ -71,7 +73,7 @@ export const entrepreneurs: Entrepreneur[] = [
   }
 ];
 
-export const investors: Investor[] = [
+const initialInvestors: Investor[] = [
   {
     id: 'i1',
     name: 'Michael Rodriguez',
@@ -79,7 +81,7 @@ export const investors: Investor[] = [
     role: 'investor',
     avatarUrl: 'https://images.pexels.com/photos/2379004/pexels-photo-2379004.jpeg',
     bio: 'Early-stage investor with focus on B2B SaaS and fintech. Previously founded and exited two startups.',
-    investmentInterests: ['FinTech', 'SaaS', 'AI/ML'],
+    investmentInterests: ['FinTech', 'SaaS', 'Data Science'],
     investmentStage: ['Seed', 'Series A'],
     portfolioCompanies: ['PayStream', 'DataSense', 'CloudSecure'],
     totalInvestments: 12,
@@ -122,15 +124,35 @@ export const investors: Investor[] = [
   }
 ];
 
-// Combined user data for lookup
-export const users = [...entrepreneurs, ...investors];
+const getStoredUsers = (): User[] => {
+  if (typeof window === 'undefined') return [...initialEntrepreneurs, ...initialInvestors];
+  const stored = localStorage.getItem(USERS_STORAGE_KEY);
+  return stored ? JSON.parse(stored) : [...initialEntrepreneurs, ...initialInvestors];
+};
 
-// Helper function to find a user by ID
+export let users: User[] = getStoredUsers();
+
+export const saveUsers = () => {
+  if (typeof window !== 'undefined') {
+    localStorage.setItem(USERS_STORAGE_KEY, JSON.stringify(users));
+  }
+};
+
+export const entrepreneurs = users.filter(u => u.role === 'entrepreneur') as Entrepreneur[];
+export const investors = users.filter(u => u.role === 'investor') as Investor[];
+
 export const findUserById = (id: string) => {
   return users.find(user => user.id === id) || null;
 };
 
-// Helper function to get a user by role
 export const getUsersByRole = (role: 'entrepreneur' | 'investor') => {
   return users.filter(user => user.role === role);
 };
+
+export const updateUserData = (updatedUser: User) => {
+  const index = users.findIndex(u => u.id === updatedUser.id);
+  if (index !== -1) {
+    users[index] = updatedUser;
+    saveUsers();
+  }
+};

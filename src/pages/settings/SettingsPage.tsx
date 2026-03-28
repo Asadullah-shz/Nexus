@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { User, Lock, Bell, Palette, CreditCard, PlusCircle } from 'lucide-react';
 import { Card, CardHeader, CardBody } from '../../components/ui/Card';
 import { Input } from '../../components/ui/Input';
@@ -7,39 +7,80 @@ import { Badge } from '../../components/ui/Badge';
 import { Avatar } from '../../components/ui/Avatar';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
+import { getStoredBalance, getStoredTransactions } from '../../data/payments';
 
 export const SettingsPage: React.FC = () => {
-  const { user } = useAuth();
+  const { user, updateProfile } = useAuth();
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [activeNav, setActiveNav] = useState('profile');
 
   const { accentColor, setAccentColor } = useTheme();
-  const [settings, setSettings] = useState({
-    twoFactor: false,
-    emailNotifications: true,
-    pushNotifications: true,
-    marketingEmails: false,
-    compactMode: false,
-    publicProfile: true
+  
+  const [profileData, setProfileData] = useState({
+    name: user?.name || '',
+    email: user?.email || '',
+    bio: user?.bio || '',
+    location: 'San Francisco, CA'
   });
+
+  const [settings, setSettings] = useState(() => {
+    const saved = localStorage.getItem(`nexus_settings_${user?.id}`);
+    return saved ? JSON.parse(saved) : {
+      twoFactor: false,
+      emailNotifications: true,
+      pushNotifications: true,
+      marketingEmails: false,
+      compactMode: false,
+      publicProfile: true
+    };
+  });
+
+  useEffect(() => {
+    if (user) {
+      localStorage.setItem(`nexus_settings_${user.id}`, JSON.stringify(settings));
+    }
+  }, [settings, user]);
 
   if (!user) return null;
 
-  const handleSave = () => {
+  const handleSave = async () => {
     setIsSaving(true);
-
-    setTimeout(() => {
-      setIsSaving(false);
+    try {
+      await updateProfile(user.id, {
+        name: profileData.name,
+        email: profileData.email,
+        bio: profileData.bio
+      });
       setShowSuccess(true);
       setTimeout(() => setShowSuccess(false), 3000);
-    }, 1000);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file && user) {
+      const reader = new FileReader();
+      reader.onloadend = async () => {
+        const base64String = reader.result as string;
+        await updateProfile(user.id, { avatarUrl: base64String });
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const triggerFileInput = () => {
+    fileInputRef.current?.click();
   };
 
   const toggleSetting = (key: keyof typeof settings) => {
-    setSettings((prev: typeof settings) => ({ ...prev, [key]: !prev[key] }));
+    setSettings((prev: any) => ({ ...prev, [key]: !prev[key] }));
   };
-
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -66,7 +107,7 @@ export const SettingsPage: React.FC = () => {
                   className={`flex items-center w-full px-3 py-2.5 text-sm font-semibold rounded-xl transition-all ${
                     activeNav === item.id
                       ? 'text-primary-700 bg-white shadow-sm ring-1 ring-black/5'
-                      : 'text-gray-600 hover:bg-white/50:bg-gray-800/50'
+                      : 'text-gray-600 hover:bg-white/50'
                   }`}
                 >
                   <item.icon size={18} className={`mr-3 ${activeNav === item.id ? 'text-primary-600' : 'text-gray-400'}`} />
@@ -89,20 +130,26 @@ export const SettingsPage: React.FC = () => {
               </CardHeader>
               <CardBody className="space-y-6">
                 <div className="flex items-center gap-6">
-                  <div className="relative group">
+                  <input
+                    type="file"
+                    ref={fileInputRef}
+                    onChange={handleAvatarChange}
+                    accept="image/*"
+                    className="hidden"
+                  />
+                  <div className="relative group cursor-pointer" onClick={triggerFileInput}>
                     <Avatar
                       src={user.avatarUrl}
                       alt={user.name}
                       size="xl"
-                      className=""
                     />
-                    <div className="absolute inset-0 bg-black/40 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
+                    <div className="absolute inset-0 bg-black/40 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                       <Palette size={20} className="text-white" />
                     </div>
                   </div>
 
                   <div>
-                    <Button variant="outline" size="sm" className="font-semibold">
+                    <Button variant="outline" size="sm" className="font-semibold" onClick={triggerFileInput}>
                       Update Avatar
                     </Button>
                     <p className="mt-2 text-xs text-gray-500">
@@ -114,14 +161,16 @@ export const SettingsPage: React.FC = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <Input
                     label="Full Name"
-                    defaultValue={user.name}
+                    value={profileData.name}
+                    onChange={(e) => setProfileData(prev => ({ ...prev, name: e.target.value }))}
                     className="font-medium"
                   />
 
                   <Input
                     label="Email Address"
                     type="email"
-                    defaultValue={user.email}
+                    value={profileData.email}
+                    onChange={(e) => setProfileData(prev => ({ ...prev, email: e.target.value }))}
                     className="font-medium"
                   />
 
@@ -134,7 +183,8 @@ export const SettingsPage: React.FC = () => {
 
                   <Input
                     label="Primary Location"
-                    defaultValue="San Francisco, CA"
+                    value={profileData.location}
+                    onChange={(e) => setProfileData(prev => ({ ...prev, location: e.target.value }))}
                     className="font-medium"
                   />
                 </div>
@@ -144,9 +194,10 @@ export const SettingsPage: React.FC = () => {
                     Professional Bio
                   </label>
                   <textarea
-                    className="w-full rounded-xl border-gray-200 bg-white shadow-sm focus:border-primary-500 focus:ring-primary-500 transition-all font-medium text-sm"
+                    className="w-full rounded-xl border-gray-200 bg-white shadow-sm focus:border-primary-300 focus:ring-primary-300 transition-all font-medium text-sm"
                     rows={4}
-                    defaultValue={user.bio}
+                    value={profileData.bio}
+                    onChange={(e) => setProfileData(prev => ({ ...prev, bio: e.target.value }))}
                     placeholder="Tell us about yourself..."
                   ></textarea>
                 </div>
@@ -293,7 +344,7 @@ export const SettingsPage: React.FC = () => {
                   <div className="flex justify-between items-start">
                     <div>
                       <p className="text-primary-100 text-xs font-bold uppercase tracking-wider">Current Balance</p>
-                      <h3 className="text-3xl font-bold mt-1">$1.00</h3>
+                      <h3 className="text-3xl font-bold mt-1">${getStoredBalance().toLocaleString()}</h3>
                     </div>
                     <Badge className="bg-white/20 text-white border-none backdrop-blur-md">Active</Badge>
                   </div>
@@ -318,7 +369,7 @@ export const SettingsPage: React.FC = () => {
                       </div>
                       <Badge variant="gray">Primary</Badge>
                     </div>
-                    <Button variant="outline" className="w-full border-dashed border-2 rounded-2xl py-4 flex items-center justify-center gap-2 hover:bg-gray-50:bg-gray-800">
+                    <Button variant="outline" className="w-full border-dashed border-2 rounded-2xl py-4 flex items-center justify-center gap-2 hover:bg-gray-50">
                       <PlusCircle size={18} />
                       Add New Payment Method
                     </Button>
@@ -328,18 +379,19 @@ export const SettingsPage: React.FC = () => {
                 <div>
                   <h3 className="text-sm font-bold text-gray-900 mb-4">Billing History</h3>
                   <div className="space-y-4">
-                    {[
-                      { date: 'Mar 01, 2024', amount: '$49.00', status: 'Paid' },
-                      { date: 'Feb 01, 2024', amount: '$49.00', status: 'Paid' }
-                    ].map((bill, i) => (
+                    {getStoredTransactions().slice(0, 5).map((bill, i) => (
                       <div key={i} className="flex items-center justify-between py-2 border-b border-gray-50 last:border-none">
                         <div>
-                          <p className="text-sm font-bold text-gray-900">Subscription - Pro Plan</p>
-                          <p className="text-xs text-gray-500">{bill.date}</p>
+                          <p className="text-sm font-bold text-gray-900">{bill.description}</p>
+                          <p className="text-xs text-gray-500">{new Date(bill.date).toLocaleDateString()}</p>
                         </div>
                         <div className="text-right">
-                          <p className="text-sm font-bold text-gray-900">{bill.amount}</p>
-                          <p className="text-xs text-success-600 font-bold">{bill.status}</p>
+                          <p className={`text-sm font-bold ${bill.type === 'deposit' ? 'text-green-600' : 'text-gray-900'}`}>
+                            {bill.type === 'deposit' ? '+' : '-'}${bill.amount.toLocaleString()}
+                          </p>
+                          <p className={`text-xs font-bold ${bill.status === 'completed' ? 'text-success-600' : 'text-warning-600'}`}>
+                            {bill.status}
+                          </p>
                         </div>
                       </div>
                     ))}

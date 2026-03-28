@@ -19,8 +19,8 @@ export const ForgotPasswordPage: React.FC = () => {
     try {
       await forgotPassword(email);
       setIsSubmitted(true);
-    } catch (error) {
-
+    } catch (err) {
+      console.error('Password reset request failed:', err);
     } finally {
       setIsLoading(false);
     }

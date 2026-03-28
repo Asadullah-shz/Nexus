@@ -25,7 +25,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(({
   const widthClass = fullWidth ? 'w-full' : '';
   const errorClass = error ? 'border-error-500 focus:border-error-500 focus:ring-error-500' : 'border-gray-300 focus:border-primary-500 focus:ring-primary-500';
 
-  const inputBaseClass = `block bg-white rounded-md shadow-sm focus:ring-2 focus:ring-opacity-50 sm:text-sm ${errorClass}`;
+  const inputBaseClass = `block w-full bg-white rounded-xl border border-gray-200 px-4 py-2.5 shadow-sm focus:ring-2 focus:ring-opacity-50 sm:text-sm ${errorClass}`;
   const adornmentClass = startAdornment ? 'pl-10' : '';
 
   return (

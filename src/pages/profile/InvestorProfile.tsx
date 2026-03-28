@@ -1,25 +1,30 @@
 import React, { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { MessageCircle, Building2, MapPin, UserCircle, BarChart3, Briefcase, Send, CheckCircle } from 'lucide-react';
+import { MessageCircle, Building2, MapPin, UserCircle, BarChart3, Briefcase, Send } from 'lucide-react';
 import { Avatar } from '../../components/ui/Avatar';
 import { Button } from '../../components/ui/Button';
 import { Card, CardBody, CardHeader } from '../../components/ui/Card';
 import { Badge } from '../../components/ui/Badge';
 import { useAuth } from '../../context/AuthContext';
 import { findUserById } from '../../data/users';
-import { Investor } from '../../types';
+import { Investor, User } from '../../types';
+import { EditProfileModal } from '../../components/profile/EditProfileModal';
 
 export const InvestorProfile: React.FC = () => {
   const { id } = useParams<{ id: string }>();
-  const { user: currentUser } = useAuth();
+  const { user: currentUser, updateProfile } = useAuth();
   const [isRequesting, setIsRequesting] = useState(false);
   const [requestSent, setRequestSent] = useState(false);
-  const [showEditSuccess, setShowEditSuccess] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   const handleEditProfile = () => {
+    setIsEditModalOpen(true);
+  };
 
-    setShowEditSuccess(true);
-    setTimeout(() => setShowEditSuccess(false), 3000);
+  const handleSaveProfile = async (updates: Partial<User>) => {
+    if (currentUser) {
+      await updateProfile(currentUser.id, updates);
+    }
   };
 
   const investor = findUserById(id || '') as Investor | null;
@@ -51,7 +56,6 @@ export const InvestorProfile: React.FC = () => {
 
   return (
     <div className="space-y-6 animate-fade-in">
-      {}
       <Card>
         <CardBody className="sm:flex sm:items-start sm:justify-between p-6">
           <div className="sm:flex sm:space-x-6">
@@ -109,32 +113,20 @@ export const InvestorProfile: React.FC = () => {
             )}
 
             {isCurrentUser && (
-              <div className="relative">
-                <Button
-                  variant="outline"
-                  leftIcon={showEditSuccess ? <CheckCircle size={18} className="text-success-500" /> : <UserCircle size={18} />}
-                  onClick={handleEditProfile}
-                  disabled={showEditSuccess}
-                >
-                  {showEditSuccess ? 'Profile Updated' : 'Edit Profile'}
-                </Button>
-                {showEditSuccess && (
-                  <div className="absolute top-full mt-2 left-0 right-0 animate-bounce text-center z-10">
-                    <span className="text-xs font-medium text-success-600 bg-success-50 px-2 py-1 rounded-full border border-success-100 shadow-sm whitespace-nowrap">
-                      Changes saved successfully!
-                    </span>
-                  </div>
-                )}
-              </div>
+              <Button
+                variant="outline"
+                leftIcon={<UserCircle size={18} />}
+                onClick={handleEditProfile}
+              >
+                Edit Profile
+              </Button>
             )}
           </div>
         </CardBody>
       </Card>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {}
         <div className="lg:col-span-2 space-y-6">
-          {}
           <Card>
             <CardHeader>
               <h2 className="text-lg font-medium text-gray-900">About</h2>
@@ -144,7 +136,6 @@ export const InvestorProfile: React.FC = () => {
             </CardBody>
           </Card>
 
-          {}
           <Card>
             <CardHeader>
               <h2 className="text-lg font-medium text-gray-900">Investment Interests</h2>
@@ -194,7 +185,6 @@ export const InvestorProfile: React.FC = () => {
             </CardBody>
           </Card>
 
-          {}
           <Card>
             <CardHeader className="flex justify-between items-center">
               <h2 className="text-lg font-medium text-gray-900">Portfolio Companies</h2>
@@ -218,9 +208,7 @@ export const InvestorProfile: React.FC = () => {
           </Card>
         </div>
 
-        {}
         <div className="space-y-6">
-          {}
           <Card>
             <CardHeader>
               <h2 className="text-lg font-medium text-gray-900">Investment Details</h2>
@@ -271,7 +259,6 @@ export const InvestorProfile: React.FC = () => {
             </CardBody>
           </Card>
 
-          {}
           <Card>
             <CardHeader>
               <h2 className="text-lg font-medium text-gray-900">Investment Stats</h2>
@@ -312,6 +299,14 @@ export const InvestorProfile: React.FC = () => {
           </Card>
         </div>
       </div>
+
+      {isEditModalOpen && currentUser && (
+        <EditProfileModal
+          user={currentUser}
+          onClose={() => setIsEditModalOpen(false)}
+          onSave={handleSaveProfile}
+        />
+      )}
     </div>
   );
 };

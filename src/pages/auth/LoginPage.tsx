@@ -21,19 +21,21 @@ const checkPasswordStrength = (password: string): { score: number; label: string
 };
 
 const OTPInput: React.FC<{ value: string[]; onChange: (v: string[]) => void }> = ({ value, onChange }) => {
-  const refs = Array.from({ length: 6 }, () => useRef<HTMLInputElement>(null));
+  const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
   const handleChange = (index: number, val: string) => {
     if (!/^\d*$/.test(val)) return;
     const newVal = [...value];
     newVal[index] = val.slice(-1);
     onChange(newVal);
-    if (val && index < 5) refs[index + 1].current?.focus();
+    if (val && index < 5) {
+      inputRefs.current[index + 1]?.focus();
+    }
   };
 
   const handleKeyDown = (index: number, e: React.KeyboardEvent) => {
     if (e.key === 'Backspace' && !value[index] && index > 0) {
-      refs[index - 1].current?.focus();
+      inputRefs.current[index - 1]?.focus();
     }
   };
 
@@ -42,7 +44,7 @@ const OTPInput: React.FC<{ value: string[]; onChange: (v: string[]) => void }> =
       {Array.from({ length: 6 }).map((_, i) => (
         <input
           key={i}
-          ref={refs[i]}
+          ref={el => { inputRefs.current[i] = el; }}
           type="text"
           maxLength={1}
           value={value[i] || ''}

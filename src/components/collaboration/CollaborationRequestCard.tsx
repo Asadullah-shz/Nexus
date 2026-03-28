@@ -8,7 +8,9 @@ import { Badge } from '../ui/Badge';
 import { Button } from '../ui/Button';
 import { findUserById } from '../../data/users';
 import { updateRequestStatus } from '../../data/collaborationRequests';
+import { createDealFromRequest } from '../../data/deals';
 import { formatDistanceToNow } from 'date-fns';
+import { useAuth } from '../../context/AuthContext';
 
 interface CollaborationRequestCardProps {
   request: CollaborationRequest;
@@ -20,12 +22,23 @@ export const CollaborationRequestCard: React.FC<CollaborationRequestCardProps> =
   onStatusUpdate
 }) => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const investor = findUserById(request.investorId);
 
   if (!investor) return null;
 
   const handleAccept = () => {
     updateRequestStatus(request.id, 'accepted');
+    
+    if (user && user.role === 'entrepreneur') {
+      const ent = user as any; 
+      createDealFromRequest(
+        ent.startupName || ent.name,
+        ent.industry || 'Unknown',
+        ent.avatarUrl
+      );
+    }
+
     if (onStatusUpdate) {
       onStatusUpdate(request.id, 'accepted');
     }

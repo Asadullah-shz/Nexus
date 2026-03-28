@@ -1,4 +1,8 @@
-import { Doc } from '../types';
+import { Doc, DocStatus } from '../types';
+
+export type { Doc, DocStatus };
+
+const STORAGE_KEY = 'nexus_documents';
 
 export const INITIAL_DOCS: Doc[] = [
   {
@@ -7,9 +11,9 @@ export const INITIAL_DOCS: Doc[] = [
     type: 'PDF',
     size: '1.2 MB',
     uploadedAt: '2024-02-20',
-    status: 'In Review',
+    status: 'In Review' as DocStatus,
     signedBy: ['Michael Rodriguez'],
-    ownerId: 'e1', // Sarah Johnson
+    ownerId: 'e1', 
     content: [
       { title: 'Investment Structure', lines: ['Series A Preferred Stock', 'Pre-money valuation: $10,000,000', 'Target Investment: $1,500,000'] },
       { title: 'Liquidation Preference', lines: ['1x Non-participating preferred', 'Standard anti-dilution provisions'] },
@@ -22,9 +26,9 @@ export const INITIAL_DOCS: Doc[] = [
     type: 'PDF',
     size: '0.8 MB',
     uploadedAt: '2024-02-18',
-    status: 'Signed',
+    status: 'Signed' as DocStatus,
     signedBy: ['Michael Rodriguez', 'Sarah Johnson'],
-    ownerId: 'e2', // Marcus Chen
+    ownerId: 'e2', 
     content: [
       { title: '1. Definition of Confidential Information', lines: ['All information shared during technical discussion', 'Proprietary algorithms and user data structures'] },
       { title: '2. Term', lines: ['The term of this agreement is 3 years from signature'] },
@@ -37,44 +41,54 @@ export const INITIAL_DOCS: Doc[] = [
     type: 'Document',
     size: '3.4 MB',
     uploadedAt: '2024-02-15',
-    status: 'Draft',
-    ownerId: 'e1', // Sarah Johnson
+    status: 'Draft' as DocStatus,
+    ownerId: 'e1', 
     content: [
-      { title: 'Executive Summary', lines: ['TechWave AI is revolutionizing edge computing', 'Solving latency for high-throughput robotics'] },
+      { title: 'Executive Summary', lines: ['NexusWave is revolutionizing edge computing', 'Solving latency for high-throughput robotics'] },
       { title: 'Market Opportunity', lines: ['Total Addressable Market: $45B by 2026', 'Targeting manufacturing and logistics sectors'] },
       { title: 'Growth Strategy', lines: ['Direct sales to Tier-1 automotive partners', 'Strategic partnership with cloud providers'] }
     ]
-  },
-  {
-    id: 'd4',
-    name: 'Pitch Deck 2024.pdf',
-    type: 'PDF',
-    size: '5.2 MB',
-    uploadedAt: '2024-02-25',
-    status: 'Signed',
-    ownerId: 'e1',
-    content: [
-      { title: 'The Problem', lines: ['Traditional AI is too slow for real-time safety systems', 'Cloud dependency leads to dangerous failures'] },
-      { title: 'The Solution', lines: ['Proprietary "Liquid AI" architecture for edge chips', '90% reduction in power consumption'] },
-      { title: 'Team', lines: ['Founders from MIT Media Lab and NVIDIA Robotics'] }
-    ]
-  },
-  {
-    id: 'd5',
-    name: 'Financial Projections.xlsx',
-    type: 'Spreadsheet',
-    size: '2.1 MB',
-    uploadedAt: '2024-03-01',
-    status: 'In Review',
-    ownerId: 'e1',
-    content: [
-      { title: 'Revenue Projection (FY24)', lines: ['Q1: $250k (Actual)', 'Q2: $450k (Projected)', 'Q3: $780k (Projected)', 'Q4: $1.2M (Projected)'] },
-      { title: 'Burn & Runway', lines: ['Monthly Burn: $120k', 'Runway: 14 months (Pre-funding)'] },
-      { title: 'Use of Funds', lines: ['60% R&D / Hiring', '25% Sales & Marketing', '15% Operations'] }
-    ]
-  },
+  }
 ];
 
+const getStoredDocuments = (): Doc[] => {
+  if (typeof window === 'undefined') return INITIAL_DOCS;
+  const stored = localStorage.getItem(STORAGE_KEY);
+  return stored ? JSON.parse(stored) : INITIAL_DOCS;
+};
+
+export let documents: Doc[] = getStoredDocuments();
+
+const saveDocuments = () => {
+  if (typeof window !== 'undefined') {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(documents));
+  }
+};
+
 export const getDocumentsByOwner = (ownerId: string): Doc[] => {
-  return INITIAL_DOCS.filter(doc => doc.ownerId === ownerId);
+  return documents.filter(doc => doc.ownerId === ownerId);
+};
+
+export const addDocument = (doc: Doc) => {
+  documents.unshift(doc);
+  saveDocuments();
+};
+
+export const updateDocStatus = (docId: string, status: DocStatus, signedBy?: string[]) => {
+  documents = documents.map(doc => {
+    if (doc.id === docId) {
+      return { 
+        ...doc, 
+        status, 
+        signedBy: signedBy || doc.signedBy 
+      };
+    }
+    return doc;
+  });
+  saveDocuments();
+};
+
+export const deleteDocument = (docId: string) => {
+  documents = documents.filter(doc => doc.id !== docId);
+  saveDocuments();
 };

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { MessageCircle, Users, Calendar, Building2, MapPin, UserCircle, FileText, DollarSign, Send, CheckCircle } from 'lucide-react';
+import { MessageCircle, Users, Calendar, Building2, MapPin, UserCircle, FileText, DollarSign, Send } from 'lucide-react';
 import { Avatar } from '../../components/ui/Avatar';
 import { Button } from '../../components/ui/Button';
 import { Card, CardBody, CardHeader } from '../../components/ui/Card';
@@ -10,19 +10,25 @@ import { findUserById } from '../../data/users';
 import { createCollaborationRequest, getRequestsFromInvestor } from '../../data/collaborationRequests';
 import { getDocumentsByOwner } from '../../data/documents';
 import { PreviewModal } from '../../components/documents/PreviewModal';
-import { Entrepreneur, Doc } from '../../types';
+import { Entrepreneur, Doc, User } from '../../types';
+import { EditProfileModal } from '../../components/profile/EditProfileModal';
 
 export const EntrepreneurProfile: React.FC = () => {
   const { id } = useParams<{ id: string }>();
-  const { user: currentUser } = useAuth();
+  const { user: currentUser, updateProfile } = useAuth();
   const [isRequesting, setIsRequesting] = useState(false);
   const [requestSent, setRequestSent] = useState(false);
   const [previewDoc, setPreviewDoc] = useState<Doc | null>(null);
-  const [showEditSuccess, setShowEditSuccess] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
   const handleEditProfile = () => {
-    setShowEditSuccess(true);
-    setTimeout(() => setShowEditSuccess(false), 3000);
+    setIsEditModalOpen(true);
+  };
+
+  const handleSaveProfile = async (updates: Partial<User>) => {
+    if (currentUser) {
+      await updateProfile(currentUser.id, updates);
+    }
   };
 
   const entrepreneur = findUserById(id || '') as Entrepreneur | null;
@@ -65,7 +71,6 @@ export const EntrepreneurProfile: React.FC = () => {
 
   return (
     <div className="space-y-6 animate-fade-in">
-      {}
       <Card>
         <CardBody className="sm:flex sm:items-start sm:justify-between p-6">
           <div className="sm:flex sm:space-x-6">
@@ -129,32 +134,20 @@ export const EntrepreneurProfile: React.FC = () => {
             )}
 
             {isCurrentUser && (
-              <div className="relative">
-                <Button
-                  variant="outline"
-                  leftIcon={showEditSuccess ? <CheckCircle size={18} className="text-success-500" /> : <UserCircle size={18} />}
-                  onClick={handleEditProfile}
-                  disabled={showEditSuccess}
-                >
-                  {showEditSuccess ? 'Profile Updated' : 'Edit Profile'}
-                </Button>
-                {showEditSuccess && (
-                  <div className="absolute top-full mt-2 left-0 right-0 animate-bounce text-center z-10">
-                    <span className="text-xs font-medium text-success-600 bg-success-50 px-2 py-1 rounded-full border border-success-100 shadow-sm whitespace-nowrap">
-                      Changes saved successfully!
-                    </span>
-                  </div>
-                )}
-              </div>
+              <Button
+                variant="outline"
+                leftIcon={<UserCircle size={18} />}
+                onClick={handleEditProfile}
+              >
+                Edit Profile
+              </Button>
             )}
           </div>
         </CardBody>
       </Card>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {}
         <div className="lg:col-span-2 space-y-6">
-          {}
           <Card>
             <CardHeader>
               <h2 className="text-lg font-medium text-gray-900">About</h2>
@@ -164,7 +157,6 @@ export const EntrepreneurProfile: React.FC = () => {
             </CardBody>
           </Card>
 
-          {}
           <Card>
             <CardHeader>
               <h2 className="text-lg font-medium text-gray-900">Startup Overview</h2>
@@ -202,7 +194,6 @@ export const EntrepreneurProfile: React.FC = () => {
             </CardBody>
           </Card>
 
-          {}
           <Card>
             <CardHeader className="flex justify-between items-center">
               <h2 className="text-lg font-medium text-gray-900">Team</h2>
@@ -259,9 +250,7 @@ export const EntrepreneurProfile: React.FC = () => {
           </Card>
         </div>
 
-        {}
         <div className="space-y-6">
-          {}
           <Card>
             <CardHeader>
               <h2 className="text-lg font-medium text-gray-900">Funding</h2>
@@ -307,7 +296,6 @@ export const EntrepreneurProfile: React.FC = () => {
             </CardBody>
           </Card>
 
-          {}
           <Card>
             <CardHeader>
               <h2 className="text-lg font-medium text-gray-900">Documents</h2>
@@ -368,6 +356,14 @@ export const EntrepreneurProfile: React.FC = () => {
           doc={previewDoc}
           onClose={() => setPreviewDoc(null)}
           showSignButton={isCurrentUser}
+        />
+      )}
+
+      {isEditModalOpen && currentUser && (
+        <EditProfileModal
+          user={currentUser}
+          onClose={() => setIsEditModalOpen(false)}
+          onSave={handleSaveProfile}
         />
       )}
     </div>

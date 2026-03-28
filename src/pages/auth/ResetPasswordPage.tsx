@@ -31,8 +31,8 @@ export const ResetPasswordPage: React.FC = () => {
     try {
       await resetPassword(token, password);
       navigate('/login');
-    } catch (error) {
-
+    } catch (err) {
+      console.error('Password reset failed:', err);
     } finally {
       setIsLoading(false);
     }

@@ -9,7 +9,7 @@ import { ChatUserList } from '../../components/chat/ChatUserList';
 import { useAuth } from '../../context/AuthContext';
 import { Message } from '../../types';
 import { findUserById } from '../../data/users';
-import { getMessagesBetweenUsers, sendMessage, getConversationsForUser } from '../../data/messages';
+import { getMessagesBetweenUsers, sendMessage, getConversationsForUser, markMessagesAsRead } from '../../data/messages';
 import { MessageCircle } from 'lucide-react';
 
 export const ChatPage: React.FC = () => {
@@ -40,9 +40,9 @@ export const ChatPage: React.FC = () => {
   }, [currentUser]);
 
   useEffect(() => {
-
     if (currentUser && userId) {
       setMessages(getMessagesBetweenUsers(currentUser.id, userId));
+      markMessagesAsRead(currentUser.id, userId);
     }
   }, [currentUser, userId]);
 

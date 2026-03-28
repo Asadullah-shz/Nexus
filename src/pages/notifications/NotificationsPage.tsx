@@ -5,23 +5,27 @@ import { Avatar } from '../../components/ui/Avatar';
 import { Badge } from '../../components/ui/Badge';
 import { Button } from '../../components/ui/Button';
 import { useAuth } from '../../context/AuthContext';
-import { getNotificationsForUser, Notification } from '../../data/notifications';
+import { getAppNotificationsForUser, AppNotification, markAppNotificationsAsRead } from '../../data/notifications';
 import { findUserById } from '../../data/users';
 
 export const NotificationsPage: React.FC = () => {
   const { user } = useAuth();
-  const [notifs, setNotifs] = React.useState<Notification[]>([]);
+  const [notifs, setNotifs] = React.useState<AppNotification[]>([]);
 
   React.useEffect(() => {
     if (user) {
-      setNotifs(getNotificationsForUser(user.id));
+      setNotifs(getAppNotificationsForUser(user.id));
     }
   }, [user]);
 
   const markAllAsRead = () => {
-    setNotifs(prev => prev.map(n => ({ ...n, unread: false })));
+    if (user) {
+      markAppNotificationsAsRead(user.id);
+      setNotifs(getAppNotificationsForUser(user.id));
+    }
   };
-  const getNotificationIcon = (type: string) => {
+
+  const getAppNotificationIcon = (type: string) => {
     switch (type) {
       case 'message':
         return <MessageCircle size={16} className="text-primary-600" />;
@@ -60,7 +64,7 @@ export const NotificationsPage: React.FC = () => {
               >
                 <CardBody className="flex items-start p-4">
                   <Avatar
-                    src={triggeringUser?.avatarUrl}
+                    src={triggeringUser?.avatarUrl || ''}
                     alt={triggeringUser?.name || 'User'}
                     size="md"
                     className="flex-shrink-0 mr-4"
@@ -81,7 +85,7 @@ export const NotificationsPage: React.FC = () => {
                     </p>
 
                     <div className="flex items-center gap-2 mt-2 text-sm text-gray-500">
-                      {getNotificationIcon(notification.type)}
+                      {getAppNotificationIcon(notification.type)}
                       <span>{notification.time}</span>
                     </div>
                   </div>

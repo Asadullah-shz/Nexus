@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   DollarSign, ArrowUpRight, ArrowDownLeft, ArrowLeftRight,
-Clock, CheckCircle, XCircle,Wallet, Building2, Send
+  Clock, CheckCircle, XCircle, Wallet, Building2, Send
 } from 'lucide-react';
 import { Card, CardBody, CardHeader } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
@@ -10,20 +10,17 @@ import { Avatar } from '../../components/ui/Avatar';
 import { useAuth } from '../../context/AuthContext';
 import toast from 'react-hot-toast';
 import { CreditCard } from '../../components/ui/credit-card';
+import { 
+  getStoredTransactions, 
+  saveTransactions, 
+  getStoredBalance, 
+  saveBalance,
+  updateTransactionStatus
+} from '../../data/payments';
+import { Transaction, TransactionType, TransactionStatus } from '../../types';
 
-type TxStatus = 'completed' | 'pending' | 'failed';
-type TxType = 'deposit' | 'withdrawal' | 'transfer' | 'funding';
-
-interface Transaction {
-  id: string;
-  type: TxType;
-  amount: number;
-  sender: string;
-  receiver: string;
-  status: TxStatus;
-  date: string;
-  description: string;
-}
+type TxStatus = TransactionStatus;
+type TxType = TransactionType;
 
 interface Deal {
   startup: string;
@@ -34,16 +31,8 @@ interface Deal {
 }
 
 const INITIAL_DEALS: Deal[] = [
-  { startup: 'TechWave AI', avatar: 'https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg', target: 2000000, raised: 1800000, investors: 24 },
+  { startup: 'NexusWave', avatar: 'https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg', target: 2000000, raised: 1800000, investors: 24 },
   { startup: 'GreenLife Solutions', avatar: 'https://images.pexels.com/photos/614810/pexels-photo-614810.jpeg', target: 1500000, raised: 900000, investors: 18 },
-];
-
-const INITIAL_TRANSACTIONS: Transaction[] = [
-  { id: 't1', type: 'deposit', amount: 50000, sender: 'Bank Account', receiver: 'My Wallet', status: 'completed', date: '2024-02-20', description: 'Deposit from Chase Bank' },
-  { id: 't2', type: 'funding', amount: 25000, sender: 'Michael Rodriguez', receiver: 'TechWave AI', status: 'completed', date: '2024-02-18', description: 'Deal funding - Series A' },
-  { id: 't3', type: 'transfer', amount: 5000, sender: 'My Wallet', receiver: 'Jennifer Lee', status: 'pending', date: '2024-02-16', description: 'Consulting fee' },
-  { id: 't4', type: 'withdrawal', amount: 10000, sender: 'My Wallet', receiver: 'Bank Account', status: 'completed', date: '2024-02-14', description: 'Withdrawal to bank' },
-  { id: 't5', type: 'funding', amount: 15000, sender: 'Jennifer Lee', receiver: 'GreenLife Solutions', status: 'failed', date: '2024-02-10', description: 'Seed funding attempt' },
 ];
 
 const TX_CONFIG: Record<TxType, { label: string; color: string; icon: React.ReactNode }> = {
@@ -87,7 +76,7 @@ const ActionModal: React.FC<ActionModalProps> = ({ type, walletBalance, deals, o
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl">
+      <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl animate-fade-in">
         <div className="p-6 border-b border-gray-100">
           <div className="flex items-center gap-3">
             <div className={`p-2 bg-gray-100 rounded-lg ${cfg.color}`}>{cfg.icon}</div>
@@ -96,7 +85,6 @@ const ActionModal: React.FC<ActionModalProps> = ({ type, walletBalance, deals, o
         </div>
 
         <div className="p-6 space-y-4">
-          {}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Amount (USD)</label>
             <div className="relative">
@@ -135,7 +123,6 @@ const ActionModal: React.FC<ActionModalProps> = ({ type, walletBalance, deals, o
             )}
           </div>
 
-          {}
           {error && (
             <div className="p-3 bg-red-50 border border-red-100 rounded-lg flex items-center gap-2 text-red-600 text-xs animate-shake">
               <XCircle size={14} />
@@ -143,7 +130,6 @@ const ActionModal: React.FC<ActionModalProps> = ({ type, walletBalance, deals, o
             </div>
           )}
 
-          {}
           <div>
             <p className="text-xs text-gray-500 mb-2">Quick amounts</p>
             <div className="flex gap-2">
@@ -151,7 +137,7 @@ const ActionModal: React.FC<ActionModalProps> = ({ type, walletBalance, deals, o
                 <button
                   key={a}
                   onClick={() => setAmount(String(a))}
-                  className="flex-1 py-1.5 text-xs border border-gray-200 rounded-lg hover:bg-gray-50 text-gray-600"
+                  className="flex-1 py-1.5 text-xs border border-gray-200 rounded-lg hover:bg-gray-50 text-gray-600 transition-colors"
                 >
                   ${a.toLocaleString()}
                 </button>
@@ -159,9 +145,8 @@ const ActionModal: React.FC<ActionModalProps> = ({ type, walletBalance, deals, o
             </div>
           </div>
 
-          {}
           {type === 'deposit' && (
-            <div className="bg-gray-900 rounded-xl p-4 border border-gray-200">
+            <div className="bg-gray-900 rounded-xl p-4 border border-gray-200 overflow-hidden">
               <CreditCard type="gray-dark"  />
             </div>
           )}
@@ -204,11 +189,19 @@ const ActionModal: React.FC<ActionModalProps> = ({ type, walletBalance, deals, o
 
 export const PaymentsPage: React.FC = () => {
   const { user } = useAuth();
-  const [transactions, setTransactions] = useState<Transaction[]>(INITIAL_TRANSACTIONS);
+  const [transactions, setTransactions] = useState<Transaction[]>(getStoredTransactions());
   const [deals, setDeals] = useState<Deal[]>(INITIAL_DEALS);
-  const [walletBalance, setWalletBalance] = useState(125_000);
+  const [walletBalance, setWalletBalance] = useState(getStoredBalance());
   const [activeModal, setActiveModal] = useState<ModalType>(null);
   const [filter, setFilter] = useState<TxType | 'all'>('all');
+
+  useEffect(() => {
+    saveTransactions(transactions);
+  }, [transactions]);
+
+  useEffect(() => {
+    saveBalance(walletBalance);
+  }, [walletBalance]);
 
   const handleAction = (amount: number, target: string) => {
     const typeMap: Record<NonNullable<ModalType>, TxType> = {
@@ -246,6 +239,7 @@ export const PaymentsPage: React.FC = () => {
 
     setTimeout(() => {
       setTransactions(txs => txs.map(tx => tx.id === newTx.id ? { ...tx, status: 'completed' } : tx));
+      updateTransactionStatus(newTx.id, 'completed');
     }, 3000);
   };
 
@@ -260,39 +254,37 @@ export const PaymentsPage: React.FC = () => {
         <p className="text-gray-600">Manage your funds and track investment transactions</p>
       </div>
 
-      {}
-      <div className="bg-gradient-to-br from-primary-600 via-primary-700 to-primary-900 rounded-2xl p-6 text-white">
+      <div className="bg-gradient-to-br from-primary-600 via-primary-700 to-primary-900 rounded-3xl p-8 text-white shadow-xl">
         <div className="flex items-start justify-between">
           <div>
             <div className="flex items-center gap-2 mb-2 opacity-80">
               <Wallet size={16} />
-              <span className="text-sm">My Wallet Balance</span>
+              <span className="text-sm font-medium tracking-wide border-b border-white/20 pb-0.5">My Wallet Balance</span>
             </div>
-            <h2 className="text-4xl font-bold">${walletBalance.toLocaleString()}</h2>
-            <p className="text-primary-200 text-sm mt-1">Available Balance · USD</p>
+            <h2 className="text-5xl font-extrabold tracking-tight">${walletBalance.toLocaleString()}</h2>
+            <p className="text-primary-100 text-xs mt-3 bg-white/10 inline-block px-2 py-0.5 rounded-full backdrop-blur-sm">Available Balance · USD</p>
           </div>
-          <div className="bg-white/10 p-3 rounded-xl">
-            <DollarSign size={28} />
+          <div className="bg-white/10 p-4 rounded-2xl backdrop-blur-md border border-white/20 shadow-inner">
+            <DollarSign size={32} />
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-4 mt-6 pt-6 border-t border-white/20">
+        <div className="grid grid-cols-2 gap-8 mt-8 pt-8 border-t border-white/10">
           <div>
-            <div className="flex items-center gap-1 text-green-300 text-xs mb-1">
-              <ArrowDownLeft size={12} /> Total In
+            <div className="flex items-center gap-2 text-green-300 text-xs font-bold uppercase tracking-widest mb-1 opacity-90">
+              <ArrowDownLeft size={14} className="animate-pulse" /> Total In
             </div>
-            <p className="text-white font-semibold">${totalIn.toLocaleString()}</p>
+            <p className="text-2xl font-bold text-white">${totalIn.toLocaleString()}</p>
           </div>
           <div>
-            <div className="flex items-center gap-1 text-red-300 text-xs mb-1">
-              <ArrowUpRight size={12} /> Total Out
+            <div className="flex items-center gap-2 text-red-300 text-xs font-bold uppercase tracking-widest mb-1 opacity-90">
+              <ArrowUpRight size={14} className="animate-pulse" /> Total Out
             </div>
-            <p className="text-white font-semibold">${totalOut.toLocaleString()}</p>
+            <p className="text-2xl font-bold text-white">${totalOut.toLocaleString()}</p>
           </div>
         </div>
       </div>
 
-      {}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {([
           { type: 'deposit', label: 'Deposit', icon: <ArrowDownLeft size={24} />, color: 'bg-green-50 text-green-600 hover:bg-green-100' },
@@ -303,43 +295,42 @@ export const PaymentsPage: React.FC = () => {
           <button
             key={action.type}
             onClick={() => setActiveModal(action.type as ModalType)}
-            className={`flex flex-col items-center gap-3 p-5 rounded-xl border border-gray-200 transition-colors ${action.color}`}
+            className={`flex flex-col items-center gap-3 p-5 rounded-2xl border border-gray-100 transition-all hover:shadow-lg active:scale-95 ${action.color}`}
           >
-            {action.icon}
-            <span className="text-sm font-medium">{action.label}</span>
+            <div className="p-2 rounded-xl bg-white/50 shadow-sm">{action.icon}</div>
+            <span className="text-sm font-bold tracking-tight">{action.label}</span>
           </button>
         ))}
       </div>
 
-      {}
-      <Card>
-        <CardHeader>
-          <h2 className="text-lg font-medium text-gray-900">Active Deal Funding</h2>
+      <Card className="rounded-2xl border-none shadow-premium overflow-hidden">
+        <CardHeader className="bg-gray-50/50 border-b border-gray-100 px-6 py-4">
+          <h2 className="text-lg font-bold text-gray-900">Active Deal Funding</h2>
         </CardHeader>
-        <CardBody className="space-y-3">
+        <CardBody className="space-y-4 p-6">
           {deals.map((deal, i) => {
             const pct = Math.round((deal.raised / deal.target) * 100);
             return (
-              <div key={i} className="p-4 border border-gray-100 rounded-xl">
-                <div className="flex items-center justify-between mb-3">
-                  <div className="flex items-center gap-3">
-                    <Avatar src={deal.avatar} alt={deal.startup} size="sm" />
+              <div key={i} className="p-5 border border-gray-100 rounded-2xl hover:border-primary-200 hover:shadow-md transition-all group">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-4">
+                    <Avatar src={deal.avatar} alt={deal.startup} size="md" className="ring-2 ring-gray-100" />
                     <div>
-                      <p className="font-medium text-gray-900 text-sm">{deal.startup}</p>
-                      <p className="text-xs text-gray-500">{deal.investors} investors · Series A</p>
+                      <p className="font-bold text-gray-900 text-base">{deal.startup}</p>
+                      <p className="text-xs text-gray-500 font-medium">{deal.investors} investors · Series A</p>
                     </div>
                   </div>
-                  <Button size="sm" variant="outline" onClick={() => setActiveModal('funding')}>
-                    Invest
+                  <Button size="sm" variant="outline" onClick={() => setActiveModal('funding')} className="font-bold tracking-tight hover:bg-primary-50">
+                    Invest Now
                   </Button>
                 </div>
-                <div className="flex items-center justify-between text-xs text-gray-500 mb-1.5">
-                  <span>${deal.raised.toLocaleString()} raised</span>
-                  <span>{pct}%</span>
+                <div className="flex items-center justify-between text-xs text-gray-500 mb-2.5 font-bold uppercase tracking-wider">
+                  <span className="text-primary-600">${deal.raised.toLocaleString()} raised</span>
+                  <span className="bg-primary-50 text-primary-700 px-2 py-0.5 rounded-full">{pct}%</span>
                   <span>Goal: ${deal.target.toLocaleString()}</span>
                 </div>
-                <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
-                  <div className="h-full bg-primary-500 rounded-full transition-all" style={{ width: `${pct}%` }} />
+                <div className="h-2.5 bg-gray-100 rounded-full overflow-hidden shadow-inner">
+                  <div className="h-full bg-gradient-to-r from-primary-400 to-primary-600 rounded-full transition-all duration-1000" style={{ width: `${pct}%` }} />
                 </div>
               </div>
             );
@@ -347,18 +338,19 @@ export const PaymentsPage: React.FC = () => {
         </CardBody>
       </Card>
 
-      {}
-      <Card>
-        <CardHeader>
+      <Card className="rounded-2xl border-none shadow-premium overflow-hidden">
+        <CardHeader className="bg-gray-50/50 border-b border-gray-100 px-6 py-4">
           <div className="flex items-center justify-between flex-wrap gap-3">
-            <h2 className="text-lg font-medium text-gray-900">Transaction History</h2>
-            <div className="flex gap-2 overflow-x-auto">
+            <h2 className="text-lg font-bold text-gray-900 font-outfit uppercase tracking-tight">Transaction History</h2>
+            <div className="flex gap-1.5 overflow-x-auto p-1 bg-white/50 rounded-xl border border-gray-100">
               {(['all', 'deposit', 'withdrawal', 'transfer', 'funding'] as const).map(f => (
                 <button
                   key={f}
                   onClick={() => setFilter(f)}
-                  className={`px-3 py-1 text-xs rounded-full whitespace-nowrap transition-colors ${
-                    filter === f ? 'bg-primary-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  className={`px-4 py-1.5 text-xs font-bold rounded-lg whitespace-nowrap transition-all ${
+                    filter === f 
+                      ? 'bg-primary-600 text-white shadow-md' 
+                      : 'text-gray-500 hover:text-gray-900 hover:bg-white'
                   }`}
                 >
                   {f === 'all' ? 'All' : TX_CONFIG[f].label}
@@ -371,9 +363,9 @@ export const PaymentsPage: React.FC = () => {
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
-                <tr className="border-b border-gray-100">
+                <tr className="border-b border-gray-100 bg-gray-50/30">
                   {['Description', 'Sender', 'Receiver', 'Amount', 'Status', 'Date'].map(h => (
-                    <th key={h} className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">{h}</th>
+                    <th key={h} className="px-6 py-4 text-left text-[10px] font-bold text-gray-400 uppercase tracking-widest">{h}</th>
                   ))}
                 </tr>
               </thead>
@@ -390,38 +382,40 @@ export const PaymentsPage: React.FC = () => {
                     });
 
                     return (
-                      <tr key={tx.id} className="hover:bg-gray-50">
-                        <td className="px-4 py-3">
-                          <div className="flex items-center gap-2">
-                            <div className={`p-1.5 rounded-lg bg-gray-100 ${txCfg.color}`}>{txCfg.icon}</div>
+                      <tr key={tx.id} className="hover:bg-gray-50 transition-colors group">
+                        <td className="px-6 py-4">
+                          <div className="flex items-center gap-3">
+                            <div className={`p-2 rounded-xl bg-gray-100/80 ${txCfg.color} group-hover:bg-white border border-transparent group-hover:border-gray-100 transition-all`}>{txCfg.icon}</div>
                             <div>
-                              <p className="text-sm font-medium text-gray-900 truncate max-w-32">{tx.description}</p>
-                              <p className="text-xs text-gray-500">{txCfg.label}</p>
+                              <p className="text-sm font-bold text-gray-900 truncate max-w-40">{tx.description}</p>
+                              <p className="text-[10px] text-gray-400 font-bold uppercase tracking-tight">{txCfg.label}</p>
                             </div>
                           </div>
                         </td>
-                        <td className="px-4 py-3 text-sm text-gray-600">{tx.sender}</td>
-                        <td className="px-4 py-3 text-sm text-gray-600">{tx.receiver}</td>
-                        <td className="px-4 py-3">
-                          <span className={`text-sm font-semibold ${isIn ? 'text-green-600' : 'text-red-500'}`}>
+                        <td className="px-6 py-4 text-sm font-medium text-gray-600">{tx.sender}</td>
+                        <td className="px-6 py-4 text-sm font-medium text-gray-600">{tx.receiver}</td>
+                        <td className="px-6 py-4">
+                          <span className={`text-sm font-extrabold ${isIn ? 'text-green-600' : 'text-red-500'}`}>
                             {isIn ? '+' : '-'}${tx.amount.toLocaleString()}
                           </span>
                         </td>
-                        <td className="px-4 py-3">
-                          <Badge variant={stCfg.variant} size="sm">
-                            <span className="flex items-center gap-1">{stCfg.icon}{tx.status}</span>
+                        <td className="px-6 py-4">
+                          <Badge variant={stCfg.variant} size="sm" className="font-bold tracking-tight px-2.5 py-0.5 shadow-sm">
+                            <span className="flex items-center gap-1.5">{stCfg.icon}{tx.status}</span>
                           </Badge>
                         </td>
-                        <td className="px-4 py-3 text-sm text-gray-500">{displayDate}</td>
+                        <td className="px-6 py-4 text-sm font-bold text-gray-400 font-mono tracking-tighter">{displayDate}</td>
                       </tr>
                     );
                   })
                 ) : (
                   <tr>
-                    <td colSpan={6} className="px-4 py-12 text-center text-gray-500">
-                      <div className="flex flex-col items-center gap-2">
-                        <Clock size={32} className="text-gray-200" />
-                        <p>No transactions found for this category</p>
+                    <td colSpan={6} className="px-6 py-20 text-center text-gray-500">
+                      <div className="flex flex-col items-center gap-4">
+                        <div className="p-4 bg-gray-50 rounded-3xl">
+                          <Clock size={48} className="text-gray-200" />
+                        </div>
+                        <p className="font-bold text-gray-400 tracking-tight">No transactions found in this category</p>
                       </div>
                     </td>
                   </tr>

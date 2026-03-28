@@ -80,12 +80,11 @@ export interface AuthContextType {
   isLoading: boolean;
 }
 
-// Notification Types
-export type NotificationType = 'message' | 'connection' | 'investment' | 'document';
+export type AppNotificationType = 'message' | 'connection' | 'investment' | 'document';
 
-export interface Notification {
+export interface AppNotification {
   id: string;
-  type: NotificationType;
+  type: AppNotificationType;
   userId: string;
   targetId: string;
   content: string;
@@ -93,7 +92,6 @@ export interface Notification {
   unread: boolean;
 }
 
-// Deal Types
 export interface Deal {
   id: number;
   startup: {
@@ -108,7 +106,6 @@ export interface Deal {
   lastActivity: string;
 }
 
-// Video Call Types
 export interface Participant {
   id: string;
   name: string;
@@ -117,7 +114,6 @@ export interface Participant {
   isVideoOff: boolean;
 }
 
-// Document Types (DocumentsChamber)
 export type DocStatus = 'Draft' | 'In Review' | 'Signed';
 
 export interface Doc {
@@ -130,4 +126,18 @@ export interface Doc {
   signedBy?: string[];
   ownerId: string;
   content?: { title: string; lines: string[] }[];
+}
+
+export type TransactionType = 'deposit' | 'withdrawal' | 'transfer' | 'funding';
+export type TransactionStatus = 'completed' | 'pending' | 'failed';
+
+export interface Transaction {
+  id: string;
+  type: TransactionType;
+  amount: number;
+  sender: string;
+  receiver: string;
+  status: TransactionStatus;
+  date: string;
+  description: string;
 }
